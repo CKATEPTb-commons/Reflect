@@ -88,26 +88,26 @@ public class Reflect<T> {
 
     public ConstructorReflect<T> constructor() {
         ReflectConstructor<T> constructor = classOf(this.clazz).getConstructor();
-        constructor.get().setAccessible(true);
+        constructor.get().trySetAccessible();
         return new ConstructorReflect<>(this.clazz, null, constructor);
     }
 
     public ConstructorReflect<T> constructor(Class<?>... parameters) {
         ReflectConstructor<T> constructor = classOf(this.clazz).getConstructorWithParams(parameters);
-        constructor.get().setAccessible(true);
+        constructor.get().trySetAccessible();
         return new ConstructorReflect<>(this.clazz, null, constructor);
     }
 
     public Collection<ConstructorReflect<T>> constructorAnnotated(Class<? extends Annotation> annotation) {
         return classOf(this.clazz).getConstructorsWithAnnotation(annotation).stream()
-                .peek(constructor -> constructor.get().setAccessible(true))
+                .peek(constructor -> constructor.get().trySetAccessible())
                 .map(constructor -> new ConstructorReflect<>(this.clazz, null, constructor))
                 .collect(Collectors.toUnmodifiableSet());
     }
 
     public Collection<ConstructorReflect<T>> constructors() {
         return classOf(this.clazz).getConstructors().stream()
-                .peek(constructor -> constructor.get().setAccessible(true))
+                .peek(constructor -> constructor.get().trySetAccessible())
                 .map(constructor -> new ConstructorReflect<>(this.clazz, null, constructor))
                 .collect(Collectors.toUnmodifiableSet());
     }
@@ -172,7 +172,7 @@ public class Reflect<T> {
     @SuppressWarnings("unchecked")
     private <R> MethodReflect<R> adapt(ReflectMethod reflect) {
         Method method = reflect.get();
-        method.setAccessible(true);
+        method.trySetAccessible();
         Class<R> type = (Class<R>) method.getReturnType();
         return new MethodReflect<>(type, null, reflect, this.object);
     }
@@ -223,7 +223,7 @@ public class Reflect<T> {
     @SuppressWarnings("unchecked")
     private <R> FieldReflect<R> adapt(ReflectField reflect) {
         Field field = reflect.get();
-        field.setAccessible(true);
+        field.trySetAccessible();
         try {
             Class<R> type = (Class<R>) field.getType();
             R obj = (R) field.get(this.object);

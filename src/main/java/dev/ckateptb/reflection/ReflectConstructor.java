@@ -11,7 +11,7 @@ public class ReflectConstructor<T> extends ReflectWrapper<Constructor<T>> {
     ReflectConstructor(Constructor<T> constructor) {
         super(constructor);
         this.constructor = constructor;
-        this.constructor.setAccessible(true);
+        this.constructor.trySetAccessible();
     }
 
     @Override
