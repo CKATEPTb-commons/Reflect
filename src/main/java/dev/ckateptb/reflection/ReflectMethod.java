@@ -11,7 +11,7 @@ public class ReflectMethod extends ReflectWrapper<Method> {
     ReflectMethod(Method method) {
         super(method);
         this.method = method;
-        this.method.setAccessible(true);
+        this.method.trySetAccessible();
     }
 
     @Override

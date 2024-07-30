@@ -11,7 +11,7 @@ public class ReflectField extends ReflectWrapper<Field> {
     ReflectField(Field field) {
         super(field);
         this.field = field;
-        this.field.setAccessible(true);
+        this.field.trySetAccessible();
     }
 
     @Override
