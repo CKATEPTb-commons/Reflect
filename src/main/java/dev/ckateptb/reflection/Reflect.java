@@ -18,6 +18,18 @@ import java.util.stream.Collectors;
 
 public class Reflect<T> {
     private static final Map<Class<?>, ReflectClass<?>> classCache = new HashMap<>();
+    protected final Class<T> clazz;
+    protected final T object;
+
+    @SuppressWarnings("unchecked")
+    private Reflect(T object) {
+        this((Class<T>) object.getClass(), object);
+    }
+
+    private Reflect(Class<T> clazz, T object) {
+        this.clazz = clazz;
+        this.object = object;
+    }
 
     @SuppressWarnings("unchecked")
     public static <T> ReflectClass<T> classOf(Class<T> clazz) {
@@ -44,19 +56,6 @@ public class Reflect<T> {
 
     public static <S> Reflect<S> on(Class<S> clazz, S obj) {
         return new Reflect<>(clazz, obj);
-    }
-
-    protected final Class<T> clazz;
-    protected final T object;
-
-    @SuppressWarnings("unchecked")
-    private Reflect(T object) {
-        this((Class<T>) object.getClass(), object);
-    }
-
-    private Reflect(Class<T> clazz, T object) {
-        this.clazz = clazz;
-        this.object = object;
     }
 
     public Class<T> type() {
@@ -238,6 +237,16 @@ public class Reflect<T> {
         return new Reflect<>(this.clazz, value);
     }
 
+    public <F> F as(Class<F> proxy, Class<?>... additionalInterfaces) {
+        org.joor.Reflect joor;
+        if (this.isPresent()) {
+            joor = org.joor.Reflect.on(this.object);
+        } else {
+            joor = org.joor.Reflect.onClass(this.clazz);
+        }
+        return joor.as(proxy, additionalInterfaces);
+    }
+
     public static class FieldReflect<T> extends Reflect<T> {
         private final ReflectField reference;
         private final Object referenceTarget;
@@ -316,15 +325,5 @@ public class Reflect<T> {
         protected ConstructorReflect<T> update(T value) {
             return new ConstructorReflect<>(this.clazz, value, this.reference);
         }
-    }
-
-    public <F> F as(Class<F> proxy, Class<?>... additionalInterfaces) {
-        org.joor.Reflect joor;
-        if (this.isPresent()) {
-            joor = org.joor.Reflect.on(this.object);
-        } else {
-            joor = org.joor.Reflect.onClass(this.clazz);
-        }
-        return joor.as(proxy, additionalInterfaces);
     }
 }
