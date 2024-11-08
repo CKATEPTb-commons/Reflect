@@ -1,6 +1,7 @@
 package dev.ckateptb.reflection;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,12 +27,30 @@ public class ReflectClass<T> extends ReflectWrapper<Class<T>> {
 
     private Map<String, ReflectMethod> methods() {
         if (this.methods.isEmpty()) {
-            Arrays.stream(this.target.getMethods()).map(ReflectMethod::new)
-                    .forEach(reflectField -> this.methods.put(reflectField.getName(), reflectField));
-            Arrays.stream(this.target.getDeclaredMethods()).map(ReflectMethod::new)
-                    .forEach(reflectField -> this.methods.put(reflectField.getName(), reflectField));
+            this.scanMethodsRecursively(this.target);
         }
         return this.methods;
+    }
+
+    private void scanMethodsRecursively(Class<?> clazz) {
+        if (clazz == null) {
+            return;
+        }
+        Arrays.stream(clazz.getDeclaredMethods()).map(ReflectMethod::new)
+                .forEach(reflectField -> this.methods.putIfAbsent(reflectField.getName(), reflectField));
+        for (Class<?> iface : clazz.getInterfaces()) {
+            scanInterfaceMethods(iface);
+        }
+        scanMethodsRecursively(clazz.getSuperclass());
+    }
+
+    private void scanInterfaceMethods(Class<?> iface) {
+        Arrays.stream(iface.getMethods()).filter(Method::isDefault)
+                .map(ReflectMethod::new)
+                .forEach(reflectMethod -> this.methods.putIfAbsent(reflectMethod.getName(), reflectMethod));
+        for (Class<?> superIface : iface.getInterfaces()) {
+            scanInterfaceMethods(superIface);
+        }
     }
 
     public Collection<ReflectMethod> getMethodsByName(String name) {
@@ -104,12 +123,18 @@ public class ReflectClass<T> extends ReflectWrapper<Class<T>> {
 
     private Map<String, ReflectField> fields() {
         if (this.fields.isEmpty()) {
-            Arrays.stream(this.target.getFields()).map(ReflectField::new)
-                    .forEach(reflectField -> this.fields.put(reflectField.getName(), reflectField));
-            Arrays.stream(this.target.getDeclaredFields()).map(ReflectField::new)
-                    .forEach(reflectField -> this.fields.put(reflectField.getName(), reflectField));
+            scanFieldsRecursively(this.target);
         }
         return this.fields;
+    }
+
+    private void scanFieldsRecursively(Class<?> clazz) {
+        if (clazz == null) {
+            return;
+        }
+        Arrays.stream(clazz.getDeclaredFields()).map(ReflectField::new)
+                .forEach(reflectField -> this.fields.putIfAbsent(reflectField.getName(), reflectField));
+        scanFieldsRecursively(clazz.getSuperclass());
     }
 
     public Collection<ReflectField> getFields() {
