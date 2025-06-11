@@ -1,65 +1,55 @@
 package dev.ckateptb.reflection;
 
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-
 import java.lang.reflect.Modifier;
 
-@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
-public abstract class ReflectWrapper<T> {
-    protected final T target;
+public interface ModifierHolder {
+    int modifiers();
 
-    public T get() {
-        return this.target;
-    }
-
-    public abstract int modifiers();
-
-    public boolean isPublic() {
+    default boolean isPublic() {
         return Modifier.isPublic(this.modifiers());
     }
 
-    public boolean isPrivate() {
+    default boolean isPrivate() {
         return Modifier.isPrivate(this.modifiers());
     }
 
-    public boolean isProtected() {
+    default boolean isProtected() {
         return Modifier.isProtected(this.modifiers());
     }
 
-    public boolean isStatic() {
+    default boolean isStatic() {
         return Modifier.isStatic(this.modifiers());
     }
 
-    public boolean isFinal() {
+    default boolean isFinal() {
         return Modifier.isFinal(this.modifiers());
     }
 
-    public boolean isSynchronized() {
+    default boolean isSynchronized() {
         return Modifier.isSynchronized(this.modifiers());
     }
 
-    public boolean isVolatile() {
+    default boolean isVolatile() {
         return Modifier.isVolatile(this.modifiers());
     }
 
-    public boolean isTransient() {
+    default boolean isTransient() {
         return Modifier.isTransient(this.modifiers());
     }
 
-    public boolean isNative() {
+    default boolean isNative() {
         return Modifier.isNative(this.modifiers());
     }
 
-    public boolean isInterface() {
+    default boolean isInterface() {
         return Modifier.isInterface(this.modifiers());
     }
 
-    public boolean isAbstract() {
+    default boolean isAbstract() {
         return Modifier.isAbstract(this.modifiers());
     }
 
-    public boolean isStrict() {
+    default boolean isStrict() {
         return Modifier.isStrict(this.modifiers());
     }
 }
