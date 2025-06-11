@@ -1,79 +1,56 @@
-import proguard.gradle.ProGuardTask
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath("com.guardsquare:proguard-gradle:7.2.1")
-    }
-}
+group = "dev.ckateptb"
+version = "2.0.0-SNAPSHOT"
+var JAVA_VERSION = 17
 
 plugins {
     id("java")
     id("maven-publish")
-    id("com.github.johnrengelman.shadow").version("7.1.0")
+    id("com.gradleup.shadow").version("8.3.6")
     id("io.github.gradle-nexus.publish-plugin").version("1.1.0")
 }
 
-group = "dev.ckateptb"
-version = "1.0.2-SNAPSHOT"
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(JAVA_VERSION))
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom(configurations.annotationProcessor.get())
+    }
+}
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation("org.jooq:joor:0.9.15")
-
-    compileOnly("org.projectlombok:lombok:+")
-    annotationProcessor("org.projectlombok:lombok:+")
+    // Lombok
+    compileOnly("org.projectlombok:lombok:1.18.38")
+    annotationProcessor("org.projectlombok:lombok:1.18.38")
 }
 
 tasks {
     shadowJar {
-        relocate("org.joor", "dev.ckateptb.reflection.proxy")
-    }
-    register<ProGuardTask>("shrink") {
-        dependsOn(shadowJar)
-        injars(shadowJar.get().outputs.files)
-        outjars("${project.buildDir}/libs/${project.name}-${project.version}.jar")
-
-        ignorewarnings()
-
-        libraryjars("${System.getProperty("java.home")}/jmods")
-
-        keep(
-            mapOf("includedescriptorclasses" to true),
-            "public class !dev.ckateptb.reflection.proxy.** { *; }"
-        )
-        keepattributes("RuntimeVisibleAnnotations,RuntimeVisibleParameterAnnotations,RuntimeVisibleTypeAnnotations")
-
-        dontobfuscate()
-        dontoptimize()
+        archiveClassifier.set("")
     }
     build {
-        dependsOn("shrink")
+        dependsOn(shadowJar)
     }
     publish {
-        dependsOn("shrink")
+        dependsOn(shadowJar)
     }
     withType<JavaCompile> {
         options.encoding = Charsets.UTF_8.name()
-        options.release.set(16)
-    }
-}
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(16))
+        options.release.set(JAVA_VERSION)
     }
 }
 
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
-            artifact(tasks.getByName("shrink").outputs.files.singleFile)
+            artifact(tasks.getByName("shadowJar").outputs.files.singleFile)
         }
     }
 }

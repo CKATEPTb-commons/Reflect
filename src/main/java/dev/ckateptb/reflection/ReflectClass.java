@@ -1,164 +1,232 @@
 package dev.ckateptb.reflection;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Parameter;
+import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-public class ReflectClass<T> extends ReflectWrapper<Class<T>> {
-    private final Map<String, ReflectField> fields = new HashMap<>();
-    private final Map<String, ReflectConstructor<T>> constructors = new HashMap<>();
-    private final Map<String, ReflectMethod> methods = new HashMap<>();
+public class ReflectClass<T> extends Reflect<T> implements ModifierHolder, AnnotationHolder, NameHolder, ValueHolder<T> {
+    private final T instance;
 
-    ReflectClass(Class<T> clazz) {
-        super(clazz);
+    public ReflectClass(Reflect<?> host, Class<T> clazz, T instance) {
+        super(host, clazz);
+        this.instance = instance;
     }
 
-    public boolean isAnnotationPresent(Class<? extends Annotation> annotation) {
-        return this.target.isAnnotationPresent(annotation);
-    }
-
-    public <A extends Annotation> A getAnnotation(Class<A> annotation) {
-        return this.target.getAnnotation(annotation);
-    }
-
-    private Map<String, ReflectMethod> methods() {
-        if (this.methods.isEmpty()) {
-            this.scanMethodsRecursively(this.target);
+    public Collection<ReflectField<?>> fields() {
+        HashSet<ReflectField<?>> fields = new HashSet<>();
+        Class<? super T> superclass = this.type.getSuperclass();
+        if (superclass != null) {
+            fields.addAll(Reflect.on(superclass).fields());
         }
-        return this.methods;
-    }
-
-    private void scanMethodsRecursively(Class<?> clazz) {
-        if (clazz == null) {
-            return;
+        fields.addAll(Reflect.on(this.type).fields());
+        Field[] declaredFields = this.type.getDeclaredFields();
+        for (Field field : declaredFields) {
+            field.setAccessible(true);
+            Object instance = null;
+            try {
+                instance = field.get(this.instance);
+            } catch (Throwable ignored) {
+            }
+            fields.add(new ReflectField<>(this, field, instance));
         }
-        Arrays.stream(clazz.getDeclaredMethods()).map(ReflectMethod::new)
-                .forEach(reflectField -> this.methods.putIfAbsent(reflectField.getName(), reflectField));
-        for (Class<?> iface : clazz.getInterfaces()) {
-            scanInterfaceMethods(iface);
-        }
-        scanMethodsRecursively(clazz.getSuperclass());
+        return Collections.unmodifiableSet(fields);
     }
 
-    private void scanInterfaceMethods(Class<?> iface) {
-        Arrays.stream(iface.getMethods()).filter(Method::isDefault)
-                .map(ReflectMethod::new)
-                .forEach(reflectMethod -> this.methods.putIfAbsent(reflectMethod.getName(), reflectMethod));
-        for (Class<?> superIface : iface.getInterfaces()) {
-            scanInterfaceMethods(superIface);
-        }
-    }
-
-    public Collection<ReflectMethod> getMethodsByName(String name) {
-        return this.methods().values().stream()
-                .filter(method -> method.get().getName().equals(name))
-                .collect(Collectors.toList());
-    }
-
-    public Collection<ReflectMethod> getMethodsByReturnType(Class<?> returnType) {
-        return this.methods().values().stream()
-                .filter(method -> method.get().getReturnType().equals(returnType))
-                .collect(Collectors.toList());
-    }
-
-    public Collection<ReflectMethod> getMethodsWithParms(Class<?>... parameterTypes) {
-        return this.methods().values().stream()
-                .filter(method -> Arrays.equals(method.get().getParameterTypes(), parameterTypes))
-                .collect(Collectors.toList());
-    }
-
-    public ReflectMethod getMethodByNameAndParams(String name, Class<?>... parameterTypes) {
-        return this.methods().get(name + Arrays.toString(parameterTypes));
-    }
-
-    public Collection<ReflectMethod> getMethodsWithAnnotation(Class<? extends Annotation> annotation) {
-        return this.methods().values().stream()
-                .filter(method -> method.get().isAnnotationPresent(annotation))
-                .collect(Collectors.toList());
-    }
-
-    public Collection<ReflectMethod> getMethods() {
-        return this.methods().values();
-    }
-
-    private String getKey(ReflectConstructor<T> constructor) {
-        return Arrays.toString(constructor.getParameterTypes());
+    public ReflectField<?> field(String name) {
+        return this.fields().stream()
+                .filter(field -> field.name().equals(name))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(String.format("Field with name %s not found!", name)));
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, ReflectConstructor<T>> constructors() {
-        if (this.constructors.isEmpty()) {
-            Arrays.stream(this.target.getConstructors()).map(ReflectConstructor::new)
-                    .map(constructor -> (ReflectConstructor<T>) constructor)
-                    .forEach(constructor -> this.constructors.put(getKey(constructor), constructor));
-            Arrays.stream(this.target.getDeclaredConstructors()).map(ReflectConstructor::new)
-                    .map(constructor -> (ReflectConstructor<T>) constructor)
-                    .forEach(constructor -> this.constructors.put(getKey(constructor), constructor));
+    public <R> Collection<ReflectField<R>> fields(Class<R> type) {
+        return this.fields().stream()
+                .filter(field -> field.raw().equals(type))
+                .map(field -> (ReflectField<R>) field)
+                .toList();
+    }
+
+    public <R> ReflectField<R> field(Class<R> type) {
+        return this.fields(type).stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(String.format("Field with type %s not found!", type)));
+    }
+
+    public Collection<ReflectField<?>> fields(Predicate<ReflectField<?>> filter) {
+        return this.fields().stream().filter(filter).toList();
+    }
+
+    public ReflectField<?> field(Predicate<ReflectField<?>> filter) {
+        return this.fields(filter).stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Field that match predicate not found!"));
+    }
+
+    @SuppressWarnings("unchecked")
+    public Collection<ReflectConstructor<T>> constructors() {
+        Set<ReflectConstructor<T>> constructors = new HashSet<>();
+        for (Constructor<T> constructor : (Constructor<T>[]) this.type.getConstructors()) {
+            constructors.add(new ReflectConstructor<>(this, this.type, constructor));
         }
-        return this.constructors;
+        return Collections.unmodifiableSet(constructors);
     }
 
-    // Constructor access methods
-    public ReflectConstructor<T> getConstructorWithParams(Class<?>... parameterTypes) {
-        return this.constructors().get(Arrays.toString(parameterTypes));
+    public ReflectConstructor<T> constructor() {
+        return this.constructors().stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Constructor for " + type.getName() + " not found!"));
     }
 
-    public Collection<ReflectConstructor<T>> getConstructorsWithAnnotation(Class<? extends Annotation> annotation) {
-        return this.constructors().values().stream()
-                .filter(constructor -> constructor.get().isAnnotationPresent(annotation))
-                .collect(Collectors.toList());
+    public ReflectConstructor<T> constructor(Parameter... parameters) {
+        return this.constructors(constructor -> Arrays.equals(constructor.parameters(), parameters))
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Constructor for " + type.getName() +
+                        " with specified parameters " + Arrays.toString(parameters) + " not found!"));
     }
 
-    public Collection<ReflectConstructor<T>> getConstructors() {
-        return this.constructors().values();
+    public ReflectConstructor<T> constructor(Class<?>... parameters) {
+        return this.constructors(constructor -> Arrays.equals(Arrays.stream(constructor.parameters())
+                        .map(Parameter::getType).toArray(), parameters))
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Constructor for " + type.getName() +
+                        " with specified parameters " + Arrays.toString(parameters) + " not found!"));
     }
 
-    public ReflectConstructor<T> getConstructor() {
-        return this.getConstructors().stream().findFirst().orElse(null);
+    public Collection<ReflectConstructor<T>> constructors(String... parameters) {
+        return this.constructors(constructor -> Arrays.equals(Arrays.stream(constructor.parameters())
+                .map(Parameter::getName).toArray(), parameters));
     }
 
-    private Map<String, ReflectField> fields() {
-        if (this.fields.isEmpty()) {
-            scanFieldsRecursively(this.target);
+    public ReflectConstructor<T> constructor(String... parameters) {
+        return this.constructors(parameters)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Constructor for " + type.getName() +
+                        " with specified parameters " + Arrays.toString(parameters) + " not found!"));
+    }
+
+    public Collection<ReflectConstructor<T>> constructors(Predicate<ReflectConstructor<T>> filter) {
+        return this.constructors().stream()
+                .filter(filter)
+                .collect(Collectors.toUnmodifiableSet());
+    }
+
+    public ReflectConstructor<T> constructor(Predicate<ReflectConstructor<T>> filter) {
+        return this.constructors(filter)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Constructor for " + type.getName() +
+                        " with specified predicate not found!"));
+    }
+
+    public Collection<ReflectMethod<?>> methods() {
+        return this.methods(this);
+    }
+
+    public Collection<ReflectMethod<?>> methods(String name) {
+        return this.methods().stream()
+                .filter(m -> m.name().equals(name)).collect(Collectors.toUnmodifiableSet());
+    }
+
+    public ReflectMethod<?> method(String name) {
+        return this.methods(name).stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Method with specified name " + name + " not found!"));
+    }
+
+    private Collection<ReflectMethod<?>> methods(ReflectClass<?> reflect) {
+        Set<ReflectMethod<?>> methods = new HashSet<>();
+        for (Class<?> clazz : this.type.getInterfaces()) {
+            methods.addAll(Reflect.on(clazz).methods(reflect));
         }
-        return this.fields;
-    }
-
-    private void scanFieldsRecursively(Class<?> clazz) {
-        if (clazz == null) {
-            return;
+        Class<? super T> superclass = this.type.getSuperclass();
+        if (superclass != null) {
+            methods.addAll(Reflect.on(superclass).methods(reflect));
         }
-        Arrays.stream(clazz.getDeclaredFields()).map(ReflectField::new)
-                .forEach(reflectField -> this.fields.putIfAbsent(reflectField.getName(), reflectField));
-        scanFieldsRecursively(clazz.getSuperclass());
+        methods.addAll(Arrays.stream(this.type.getDeclaredMethods())
+                .map(method -> new ReflectMethod<>(reflect, method))
+                .collect(Collectors.toSet()));
+        return Collections.unmodifiableSet(methods);
     }
 
-    public Collection<ReflectField> getFields() {
-        return this.fields().values();
+    public ReflectMethod<?> method(Predicate<ReflectMethod<?>> filter) {
+        return this.methods(filter).stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Method with specified predicate not found!"));
     }
 
-    public ReflectField getFieldByName(String name) {
-        return this.fields().get(name);
+    public Collection<ReflectMethod<?>> methods(Predicate<ReflectMethod<?>> filter) {
+        return this.methods().stream()
+                .filter(filter)
+                .collect(Collectors.toUnmodifiableSet());
     }
 
-    public Collection<ReflectField> getFieldsByType(Class<?> type) {
-        return this.getFields().stream()
-                .filter(field -> field.get().getType().equals(type))
-                .collect(Collectors.toList());
+    public Collection<ReflectMethod<?>> methods(Parameter... parameters) {
+        return this.methods(method -> Arrays.equals(method.parameters(), parameters));
     }
 
-    public Collection<ReflectField> getFieldsWithAnnotation(Class<? extends Annotation> annotation) {
-        return this.getFields().stream()
-                .filter(field -> field.get().isAnnotationPresent(annotation))
-                .collect(Collectors.toList());
+    public Collection<ReflectMethod<?>> methods(Class<?>... parameters) {
+        return this.methods(method -> Arrays.equals(Arrays.stream(method.parameters())
+                .map(Parameter::getType).toArray(), parameters));
+    }
+
+    public Collection<ReflectMethod<?>> methods(String... parameters) {
+        return this.methods(method -> Arrays.equals(Arrays.stream(method.parameters())
+                .map(Parameter::getName).toArray(), parameters));
+    }
+
+    public ReflectMethod<?> method(String name, Class<?>... parameters) {
+        return this.methods(method -> method.name().equals(name) && (parameters.length == 0 || Arrays.equals(Arrays.stream(method.parameters())
+                        .map(Parameter::getType).toArray(), parameters)))
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Method with specified name" + name + " and parameters" + Arrays.toString(parameters) + "not found!"));
+    }
+
+    public ReflectMethod<?> method(String name, Parameter... parameters) {
+        return this.methods(method -> method.name().equals(name) && (parameters.length == 0 || Arrays.equals(method.parameters(), parameters)))
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Method with specified name" + name + " and parameters" + Arrays.toString(parameters) + "not found!"));
+    }
+
+    public ReflectMethod<?> method(String name, String... parameters) {
+        return this.methods(method -> method.name().equals(name) && (parameters.length == 0 || Arrays.equals(Arrays.stream(method.parameters())
+                        .map(Parameter::getName).toArray(), parameters)))
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Method with specified name" + name + " and parameters" + Arrays.toString(parameters) + "not found!"));
+    }
+
+    @Override
+    public boolean isAnnotationPresent(Class<? extends Annotation> annotation) {
+        return this.type.isAnnotationPresent(annotation);
+    }
+
+    @Override
+    public <A extends Annotation> A annotation(Class<A> annotation) {
+        return this.type.getAnnotation(annotation);
     }
 
     @Override
     public int modifiers() {
-        return this.target.getModifiers();
+        return this.type.getModifiers();
+    }
+
+    @Override
+    public String name() {
+        return this.type.getName();
+    }
+
+    @Override
+    public T value() {
+        return this.instance;
     }
 }
