@@ -86,205 +86,152 @@ public class Person {
 ### 🔨 Constructors
 
 ```java
-// 1. Get all declared constructors
-Reflect.on(Person .class)
-       .
+public void example() {
+    // 1. Get all declared constructors
+    Reflect.on(Person.class)
+        .getConstructors();
 
-getConstructors();
+    // 2. Find constructor by parameter types
+    Reflect.on(Person.class)
+        .getConstructorWithParameters(String.class, int.class)
+        .ifPresent(ctor -> /* use ctor */);
 
-// 2. Find constructor by parameter types
-Reflect.
+    // 3. Filter constructors (e.g., two-arg only)
+    Reflect.on(Person.class)
+        .getConstructorsByFilter(c -> c.getParameters().size() == 2);
 
-on(Person .class)
-       .
-
-getConstructorWithParameters(String .class, int.class)
-       .
-
-ifPresent(ctor -> /* use ctor */);
-
-// 3. Filter constructors (e.g., two-arg only)
-        Reflect.
-
-on(Person .class)
-       .
-
-getConstructorsByFilter(c ->c.
-
-getParameters().
-
-size() ==2);
-
-// 4. Default (no-arg) constructor
-        Reflect.
-
-on(Person .class)
-       .
-
-getDefaultConstructor();
+    // 4. Default (no-arg) constructor
+    Reflect.on(Person.class)
+        .getDefaultConstructor();
+}
 ```
 
 Creating Instances
 
 ```java
-// Create a new Person using the (String, int) constructor
-Person p = Reflect.on(Person.class)
-                .getConstructorWithParameters(String.class, int.class)
-                .orElseThrow()
-                .invoke("Reflect", 3)   // returns IReflectClass<Person>
-                .getValue();            // unwrap to Person
+public void example() {
+    // Create a new Person using the (String, int) constructor
+    Person p = Reflect.on(Person.class)
+        .getConstructorWithParameters(String.class, int.class)
+        .orElseThrow()
+        .invoke("Reflect", 3)   // returns IReflectClass<Person>
+        .getValue();            // unwrap to Person
+}
 ```
 
 🧍 Instance Binding
 
 ```java
-// Bind an existing instance for field/method ops
-Person existing = new Person("Alice", 30);
-IReflectClass<Person> ctx = Reflect.on(existing);
-// or equivalently:
-ctx =Reflect.
-
-on(Person .class)
-         .
-
-setValue(existing);
+public void example() {
+    // Bind an existing instance for field/method ops
+    Person existing = new Person("Alice", 30);
+    IReflectClass<Person> ctx = Reflect.on(existing);
+    // or equivalently:
+    ctx = Reflect.on(Person.class)
+            .setValue(existing);
+}
 ```
 
 ### 🔍 Fields
 
 ```java
-// List all fields
-Reflect.on(existing).
+public void example() {
+    // List all fields
+    Reflect.on(existing)
+            .getFields();
+    
+    // String-typed fields only
+    Reflect
+        .on(Person.class)
+        .getFieldsWithType(String.class);
 
-getFields();
+    // Fields annotated with @Nullable
+    Reflect
+        .on(Person.class)
+        .getFieldsWithAnnotation(Nullable.class);
 
-// String-typed fields only
-Reflect.
-
-on(Person .class)
-       .
-
-getFieldsWithType(String .class);
-
-// Fields annotated with @Nullable
-Reflect.
-
-on(Person .class)
-       .
-
-getFieldsWithAnnotation(Nullable .class);
-
-// Field lookup by name
-Reflect.
-
-on(Person .class)
-       .
-
-getFieldWithName("name")
-       .
-
-ifPresent(field -> /* use field */);
+    // Field lookup by name
+    Reflect
+        .on(Person.class)
+        .getFieldWithName("name")
+        .ifPresent(field -> /* use field */);
+}
 ```
 
 Getting and Setting Values
 
 ```java
-// Update an instance field value
-Reflect.on(existing)
-       .
-
-getFieldWithName("name")
-       .
-
-orElseThrow()
-       .
-
-setValue("Bob")                     // set field to "Bob"
-       .
-
-updateValue(old ->old +" Smith") // append suffix
-        .
-
-getValue();                          // read back: "Bob Smith"
+public void example() {
+    // Update an instance field value
+    Reflect.on(existing)
+        .getFieldWithName("name")
+        .orElseThrow()
+        .setValue("Bob")                     // set field to "Bob"
+        .updateValue(old -> old + " Smith") // append suffix
+        .getValue();                          // read back: "Bob Smith"
+}
 ```
 
 ### 🚀 Methods
 
 ```java
-// List all methods
-Reflect.on(Person .class).
+public void example() {
+    // List all methods
+    Reflect.on(Person.class)
+        .getMethods();
 
-getMethods();
+    // Find by name
+    Reflect
+        .on(Person.class)
+        .getMethodsWithName("greet");
 
-// Find by name
-Reflect.
+    // Methods returning String
+    Reflect
+        .on(Person.class)
+        .getMethodsWithReturnType(String.class);
 
-on(Person .class)
-       .
+    // Methods taking a single String parameter
+    Reflect
+        .on(Person.class)
+        .getMethodsWithParameters(String.class);
 
-getMethodsWithName("greet");
-
-// Methods returning String
-Reflect.
-
-on(Person .class)
-       .
-
-getMethodsWithReturnType(String .class);
-
-// Methods taking a single String parameter
-Reflect.
-
-on(Person .class)
-       .
-
-getMethodsWithParameters(String .class);
-
-// Lookup by parameter name
-Reflect.
-
-on(Person .class)
-       .
-
-getMethodsWithParameters("other");
+    // Lookup by parameter name
+    Reflect
+        .on(Person.class)
+        .getMethodsWithParameters("other");
+}
 ```
 
 Invocation Example
 
 ```java
-String msg = Reflect.on(existing)
-        .getMethodWithNameAndParameters("greet", String.class)
-        .orElseThrow()
-        .invoke("World")         // returns IReflectClass<String>
-        .<String>cast()          // cast reflector to String type
-        .getValue();             // unwrap: "Hello, World! I'm Alice"
+public void example() {
+    String msg = Reflect.on(existing)
+            .getMethodWithNameAndParameters("greet", String.class)
+            .orElseThrow()
+            .invoke("World")         // returns IReflectClass<String>
+            .<String>cast()          // cast reflector to String type
+            .getValue();             // unwrap: "Hello, World! I'm Alice"
+}
 ```
 
 ### 🤝 Fluent Utilities
 
 ```java
-// Peek into the reflective chain for debugging
-Reflect.on(Person .class)
-       .
+public void example() {
+    // Peek into the reflective chain for debugging
+    Reflect.on(Person.class)
+        .peek(rc -> System.out.println("Type: " + rc.getType()))
+        .getFields()
+        .forEach(f -> System.out.println(f.getName()));
 
-peek(rc ->System.out.
-
-println("Type: "+rc.getType()))
-        .
-
-getFields()
-       .
-
-forEach(f ->System.out.
-
-println(f.getName()));
-
-// Map and flatMap for functional flows
-int age = Reflect.on(existing)
-        .map(rc -> rc.getFieldWithName("age").orElseThrow().getValue())
-        .peek(a -> System.out.println("Age before: " + a))
-        .flatMap(a -> Reflect.on(a + 5))
-        .getValue();  // computes new age value
+    // Map and flatMap for functional flows
+    int age = Reflect.on(existing)
+            .map(rc -> rc.getFieldWithName("age").orElseThrow().getValue())
+            .peek(a -> System.out.println("Age before: " + a))
+            .flatMap(a -> Reflect.on(a + 5))
+            .getValue();  // computes new age value
+}
 ```
 
 ### ⚠️ Note: For more detailed functionality and advanced use cases, please refer to the generated Javadoc or explore the full source code in the repository.
