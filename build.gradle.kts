@@ -1,23 +1,17 @@
-group = "dev.ckateptb"
-version = "2.0.0-SNAPSHOT"
-var JAVA_VERSION = 17
+var javaVersion = 11;
+group = "dev.ckateptb.commons"
+version = "3.0.0"
 
 plugins {
-    id("java")
+    id("java-library")
     id("maven-publish")
-    id("com.gradleup.shadow").version("8.3.6")
+    id("io.spring.dependency-management").version("1.1.7")
     id("io.github.gradle-nexus.publish-plugin").version("1.1.0")
 }
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(JAVA_VERSION))
-    }
-}
-
-configurations {
-    compileOnly {
-        extendsFrom(configurations.annotationProcessor.get())
+        languageVersion = JavaLanguageVersion.of(javaVersion)
     }
 }
 
@@ -26,42 +20,55 @@ repositories {
 }
 
 dependencies {
+    // Cache
+    implementation("com.github.ben-manes.caffeine:caffeine:3.2.1")
     // Lombok
     compileOnly("org.projectlombok:lombok:1.18.38")
     annotationProcessor("org.projectlombok:lombok:1.18.38")
 }
 
 tasks {
-    shadowJar {
-        archiveClassifier.set("")
+    register<Jar>("sourcesJar") {
+        archiveClassifier.set("sources")
+        from(sourceSets.main.get().allSource)
     }
-    build {
-        dependsOn(shadowJar)
+    register<Jar>("javadocJar") {
+        archiveClassifier.set("javadoc")
+        from(javadoc)
     }
-    publish {
-        dependsOn(shadowJar)
+    javadoc {
+        options.encoding = "UTF-8"
+        options.memberLevel = JavadocMemberLevel.PUBLIC
+        isFailOnError = false
     }
     withType<JavaCompile> {
         options.encoding = Charsets.UTF_8.name()
-        options.release.set(JAVA_VERSION)
+        options.release.set(javaVersion)
+    }
+    build {
+        dependsOn("sourcesJar", "javadocJar")
+    }
+    jar {
+        enabled = true
     }
 }
 
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
-            artifact(tasks.getByName("shadowJar").outputs.files.singleFile)
+            from(components["java"])
+            artifact(tasks["sourcesJar"])
+            artifact(tasks["javadocJar"])
         }
     }
-}
-
-nexusPublishing {
     repositories {
-        create("jyrafRepo") {
-            nexusUrl.set(uri("https://repo.jyraf.com/"))
-            snapshotRepositoryUrl.set(uri("https://repo.jyraf.com/repository/maven-snapshots/"))
-            username.set(System.getenv("NEXUS_USERNAME"))
-            password.set(System.getenv("NEXUS_PASSWORD"))
+        maven {
+            name = "jyrafRepo"
+            url = uri("https://repo.jyraf.com/repository/maven-releases/")
+            credentials {
+                username = System.getenv("NEXUS_USERNAME")
+                password = System.getenv("NEXUS_PASSWORD")
+            }
         }
     }
 }
