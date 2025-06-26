@@ -149,4 +149,14 @@ public class ReflectConstructor<T> implements IReflectConstructor<T> {
     public int getModifiers() {
         return this.raw.getModifiers();
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return the name of the constructor
+     */
+    @Override
+    public String getName() {
+        return this.raw.getName();
+    }
 }

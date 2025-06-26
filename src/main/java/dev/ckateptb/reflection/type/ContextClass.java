@@ -115,4 +115,14 @@ public class ContextClass<T> implements IReflectClass<T> {
     public <A extends Annotation> A getAnnotation(Class<A> annotation) {
         return this.delegate.getAnnotation(annotation);
     }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return the name of the class
+     */
+    @Override
+    public String getName() {
+        return this.delegate.getName();
+    }
 }
