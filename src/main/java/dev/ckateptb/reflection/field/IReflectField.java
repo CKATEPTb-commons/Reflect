@@ -13,13 +13,6 @@ import java.util.function.Function;
  */
 public interface IReflectField<T> extends IReflectClass<T> {
     /**
-     * Retrieves the name of this field as declared in the source.
-     *
-     * @return the field name
-     */
-    String getName();
-
-    /**
      * Returns the underlying {@link Field} instance for this reflective field.
      *
      * @return the raw Field object

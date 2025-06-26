@@ -184,6 +184,16 @@ public class ReflectClass<T> implements IReflectClass<T> {
 
     /**
      * {@inheritDoc}
+     *
+     * @return the name of the class
+     */
+    @Override
+    public String getName() {
+        return this.type.getName();
+    }
+
+    /**
+     * {@inheritDoc}
      */
     @Override
     public int getModifiers() {

@@ -1,6 +1,10 @@
 package dev.ckateptb.reflection.field;
 
 import dev.ckateptb.reflection.Reflect;
+import dev.ckateptb.reflection.api.AnnotationHolder;
+import dev.ckateptb.reflection.api.ModifierHolder;
+import dev.ckateptb.reflection.api.NameHolder;
+import dev.ckateptb.reflection.api.ValueHolder;
 import dev.ckateptb.reflection.processor.FieldProcessor;
 import dev.ckateptb.reflection.processor.Processor;
 import dev.ckateptb.reflection.type.IReflectClass;
@@ -30,7 +34,7 @@ public class ReflectField<T> implements IReflectField<T> {
     /**
      * Reflective representation of the field's type.
      */
-    @Delegate
+    @Delegate(excludes = {AnnotationHolder.class, ModifierHolder.class, NameHolder.class, ValueHolder.class})
     private final IReflectClass<T> type;
 
     /**
@@ -49,6 +53,7 @@ public class ReflectField<T> implements IReflectField<T> {
      *
      * @return the name of the field
      */
+    @Override
     public String getName() {
         return this.raw.getName();
     }
@@ -83,6 +88,7 @@ public class ReflectField<T> implements IReflectField<T> {
      *
      * @return the current field value
      */
+    @Override
     public T getValue() {
         return this.getProcessor().get(this.isStatic() ? null : this.getDeclaringClass().getValue());
     }
@@ -93,7 +99,7 @@ public class ReflectField<T> implements IReflectField<T> {
      * @param value the new value to assign
      * @return this field reflector for chaining
      */
-
+    @Override
     public IReflectField<T> setValue(T value) {
         this.getProcessor().set(this.isStatic() ? null : this.getDeclaringClass().getValue(), value);
         return this;

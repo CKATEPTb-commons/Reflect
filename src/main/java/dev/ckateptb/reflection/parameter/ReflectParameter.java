@@ -3,6 +3,7 @@ package dev.ckateptb.reflection.parameter;
 import dev.ckateptb.reflection.Reflect;
 import dev.ckateptb.reflection.api.AnnotationHolder;
 import dev.ckateptb.reflection.api.ModifierHolder;
+import dev.ckateptb.reflection.api.NameHolder;
 import dev.ckateptb.reflection.type.IReflectClass;
 import lombok.Getter;
 import lombok.experimental.Delegate;
@@ -29,7 +30,7 @@ public class ReflectParameter<T> implements IReflectClass<T> {
     /**
      * Reflective representation of the parameter's type.
      */
-    @Delegate(excludes = {AnnotationHolder.class, ModifierHolder.class})
+    @Delegate(excludes = {AnnotationHolder.class, ModifierHolder.class, NameHolder.class})
     private final IReflectClass<T> type;
 
     /**
