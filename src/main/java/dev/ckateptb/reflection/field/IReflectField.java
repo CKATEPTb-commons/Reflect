@@ -1,5 +1,6 @@
 package dev.ckateptb.reflection.field;
 
+import dev.ckateptb.reflection.constructor.IReflectConstructor;
 import dev.ckateptb.reflection.type.IReflectClass;
 
 import java.lang.reflect.Field;
@@ -12,13 +13,6 @@ import java.util.function.Function;
  * @param <T> the field value type
  */
 public interface IReflectField<T> extends IReflectClass<T> {
-    /**
-     * Retrieves the name of this field as declared in the source.
-     *
-     * @return the field name
-     */
-    String getName();
-
     /**
      * Returns the underlying {@link Field} instance for this reflective field.
      *
@@ -53,4 +47,26 @@ public interface IReflectField<T> extends IReflectClass<T> {
      * @return an {@link IReflectClass} representing the class that declares this field
      */
     <R> IReflectClass<R> getDeclaringClass();
+
+    /**
+     * Casts this reflective handle to another type without changing underlying value.
+     *
+     * @param <R>  target type
+     * @param type class object of the target type (ignored)
+     * @return this instance as {@code IReflectField<R>}
+     */
+    default <R> IReflectField<R> cast(Class<R> type) {
+        return this.cast();
+    }
+
+    /**
+     * Casts this reflective handle to another type without changing underlying value.
+     *
+     * @param <R> target type
+     * @return this instance as {@code IReflectField<R>}
+     */
+    @SuppressWarnings("unchecked")
+    default <R> IReflectField<R> cast() {
+        return (IReflectField<R>) this;
+    }
 }

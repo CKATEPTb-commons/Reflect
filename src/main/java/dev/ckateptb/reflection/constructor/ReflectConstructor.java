@@ -2,6 +2,7 @@ package dev.ckateptb.reflection.constructor;
 
 import dev.ckateptb.reflection.Reflect;
 import dev.ckateptb.reflection.field.IReflectField;
+import dev.ckateptb.reflection.method.ContextMethod;
 import dev.ckateptb.reflection.method.IReflectMethod;
 import dev.ckateptb.reflection.parameter.ReflectParameter;
 import dev.ckateptb.reflection.processor.Processor;
@@ -148,5 +149,37 @@ public class ReflectConstructor<T> implements IReflectConstructor<T> {
     @Override
     public int getModifiers() {
         return this.raw.getModifiers();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return the name of the constructor
+     */
+    @Override
+    public String getName() {
+        return this.raw.getName();
+    }
+
+    /**
+     * Casts this reflective handle to another type without changing underlying value.
+     *
+     * @param <R>  target type
+     * @param type class object of the target type (ignored)
+     * @return this instance as {@code ReflectConstructor<R>}
+     */
+    public <R> ReflectConstructor<R> cast(Class<R> type) {
+        return this.cast();
+    }
+
+    /**
+     * Casts this reflective handle to another type without changing underlying value.
+     *
+     * @param <R> target type
+     * @return this instance as {@code ContextMethod<R>}
+     */
+    @SuppressWarnings("unchecked")
+    public <R> ReflectConstructor<R> cast() {
+        return (ReflectConstructor<R>) this;
     }
 }

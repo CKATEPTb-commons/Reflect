@@ -3,6 +3,8 @@ package dev.ckateptb.reflection.type;
 import dev.ckateptb.reflection.Reflect;
 import dev.ckateptb.reflection.api.AnnotationHolder;
 import dev.ckateptb.reflection.api.ModifierHolder;
+import dev.ckateptb.reflection.api.NameHolder;
+import dev.ckateptb.reflection.api.ValueHolder;
 import dev.ckateptb.reflection.constructor.IReflectConstructor;
 import dev.ckateptb.reflection.field.IReflectField;
 import dev.ckateptb.reflection.method.IReflectMethod;
@@ -25,7 +27,7 @@ import java.util.stream.Collectors;
  *
  * @param <T> the underlying type represented
  */
-public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder {
+public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, ValueHolder<T>, NameHolder {
     /**
      * Retrieves all fields matching the given predicate.
      *

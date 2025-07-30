@@ -65,4 +65,26 @@ public interface IReflectConstructor<T> extends IReflectClass<T> {
     @Override
     @Deprecated
     T getValue();
+
+    /**
+     * Casts this reflective handle to another type without changing underlying value.
+     *
+     * @param <R>  target type
+     * @param type class object of the target type (ignored)
+     * @return this instance as {@code IReflectConstructor<R>}
+     */
+    default <R> IReflectConstructor<R> cast(Class<R> type) {
+        return this.cast();
+    }
+
+    /**
+     * Casts this reflective handle to another type without changing underlying value.
+     *
+     * @param <R> target type
+     * @return this instance as {@code IReflectConstructor<R>}
+     */
+    @SuppressWarnings("unchecked")
+    default <R> IReflectConstructor<R> cast() {
+        return (IReflectConstructor<R>) this;
+    }
 }

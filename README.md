@@ -10,7 +10,7 @@ A lightweight Java reflection utility library providing a fluent, cached API for
 ------
 
 <p align="center">
-<img alt="License" src="https://img.shields.io/github/license/CKATEPTb-commons/Reflect">
+<a href="https://github.com/CKATEPTb/Reflect?tab=LGPL-3.0-1-ov-file"><img alt="License" src="https://img.shields.io/github/license/CKATEPTb/Reflect"></a>
 <a href="https://docs.gradle.org/8.14/release-notes.html"><img src="https://img.shields.io/badge/Gradle-8.14-brightgreen.svg?colorB=469C00&logo=gradle" alt=""></a>
 <a href="https://repo.jyraf.com/service/rest/v1/search/assets/download?sort=version&repository=maven-releases&maven.groupId=dev.ckateptb.commons&maven.artifactId=Reflect&maven.extension=jar&maven.classifier=" target="_blank"><img alt="Download" src="https://img.shields.io/nexus/r/dev.ckateptb.commons/Reflect?server=https%3A%2F%2Frepo.jyraf.com"></a>
 </p>
@@ -237,11 +237,6 @@ public void example() {
 ### ⚠️ Note: For more detailed functionality and advanced use cases, please refer to the generated Javadoc or explore the full source code in the repository.
 
 ------
-
-# License
-
-This project is licensed under
-the [LGPL-3.0 license](https://github.com/CKATEPTb-commons/Reflect/blob/development/LICENSE.md).
 
 # 🛠️ Contributing
 

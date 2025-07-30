@@ -1,5 +1,6 @@
 package dev.ckateptb.reflection.method;
 
+import dev.ckateptb.reflection.field.ContextField;
 import dev.ckateptb.reflection.type.IReflectClass;
 
 import java.lang.reflect.Method;
@@ -44,5 +45,27 @@ public class ContextMethod<T> extends ReflectMethod<T> {
     @SuppressWarnings("unchecked")
     public <R> IReflectClass<R> getDeclaringClass() {
         return (IReflectClass<R>) this.owner;
+    }
+
+    /**
+     * Casts this reflective handle to another type without changing underlying value.
+     *
+     * @param <R>  target type
+     * @param type class object of the target type (ignored)
+     * @return this instance as {@code ContextMethod<R>}
+     */
+    public <R> ContextMethod<R> cast(Class<R> type) {
+        return this.cast();
+    }
+
+    /**
+     * Casts this reflective handle to another type without changing underlying value.
+     *
+     * @param <R> target type
+     * @return this instance as {@code ContextMethod<R>}
+     */
+    @SuppressWarnings("unchecked")
+    public <R> ContextMethod<R> cast() {
+        return (ContextMethod<R>) this;
     }
 }

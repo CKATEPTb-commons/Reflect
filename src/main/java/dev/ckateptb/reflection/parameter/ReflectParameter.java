@@ -3,6 +3,8 @@ package dev.ckateptb.reflection.parameter;
 import dev.ckateptb.reflection.Reflect;
 import dev.ckateptb.reflection.api.AnnotationHolder;
 import dev.ckateptb.reflection.api.ModifierHolder;
+import dev.ckateptb.reflection.api.NameHolder;
+import dev.ckateptb.reflection.method.ReflectMethod;
 import dev.ckateptb.reflection.type.IReflectClass;
 import lombok.Getter;
 import lombok.experimental.Delegate;
@@ -29,7 +31,7 @@ public class ReflectParameter<T> implements IReflectClass<T> {
     /**
      * Reflective representation of the parameter's type.
      */
-    @Delegate(excludes = {AnnotationHolder.class, ModifierHolder.class})
+    @Delegate(excludes = {AnnotationHolder.class, ModifierHolder.class, NameHolder.class})
     private final IReflectClass<T> type;
 
     /**
@@ -83,5 +85,27 @@ public class ReflectParameter<T> implements IReflectClass<T> {
     @Override
     public int getModifiers() {
         return this.raw.getModifiers();
+    }
+
+    /**
+     * Casts this reflective handle to another type without changing underlying value.
+     *
+     * @param <R>  target type
+     * @param type class object of the target type (ignored)
+     * @return this instance as {@code ReflectParameter<R>}
+     */
+    public <R> ReflectParameter<R> cast(Class<R> type) {
+        return this.cast();
+    }
+
+    /**
+     * Casts this reflective handle to another type without changing underlying value.
+     *
+     * @param <R> target type
+     * @return this instance as {@code ReflectMethod<R>}
+     */
+    @SuppressWarnings("unchecked")
+    public <R> ReflectParameter<R> cast() {
+        return (ReflectParameter<R>) this;
     }
 }

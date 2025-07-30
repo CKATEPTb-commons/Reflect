@@ -3,6 +3,7 @@ package dev.ckateptb.reflection.method;
 import dev.ckateptb.reflection.Reflect;
 import dev.ckateptb.reflection.constructor.IReflectConstructor;
 import dev.ckateptb.reflection.field.IReflectField;
+import dev.ckateptb.reflection.field.ReflectField;
 import dev.ckateptb.reflection.parameter.ReflectParameter;
 import dev.ckateptb.reflection.processor.Processor;
 import dev.ckateptb.reflection.type.IReflectClass;
@@ -161,5 +162,27 @@ public class ReflectMethod<T> implements IReflectMethod<T> {
     @Override
     public IReflectClass<T> setValue(T value) {
         return this.type.setValue(value);
+    }
+
+    /**
+     * Casts this reflective handle to another type without changing underlying value.
+     *
+     * @param <R>  target type
+     * @param type class object of the target type (ignored)
+     * @return this instance as {@code ReflectMethod<R>}
+     */
+    public <R> ReflectMethod<R> cast(Class<R> type) {
+        return this.cast();
+    }
+
+    /**
+     * Casts this reflective handle to another type without changing underlying value.
+     *
+     * @param <R> target type
+     * @return this instance as {@code ReflectMethod<R>}
+     */
+    @SuppressWarnings("unchecked")
+    public <R> ReflectMethod<R> cast() {
+        return (ReflectMethod<R>) this;
     }
 }

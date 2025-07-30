@@ -1,6 +1,11 @@
 package dev.ckateptb.reflection.field;
 
 import dev.ckateptb.reflection.Reflect;
+import dev.ckateptb.reflection.api.AnnotationHolder;
+import dev.ckateptb.reflection.api.ModifierHolder;
+import dev.ckateptb.reflection.api.NameHolder;
+import dev.ckateptb.reflection.api.ValueHolder;
+import dev.ckateptb.reflection.constructor.ReflectConstructor;
 import dev.ckateptb.reflection.processor.FieldProcessor;
 import dev.ckateptb.reflection.processor.Processor;
 import dev.ckateptb.reflection.type.IReflectClass;
@@ -30,7 +35,7 @@ public class ReflectField<T> implements IReflectField<T> {
     /**
      * Reflective representation of the field's type.
      */
-    @Delegate
+    @Delegate(excludes = {AnnotationHolder.class, ModifierHolder.class, NameHolder.class, ValueHolder.class})
     private final IReflectClass<T> type;
 
     /**
@@ -49,6 +54,7 @@ public class ReflectField<T> implements IReflectField<T> {
      *
      * @return the name of the field
      */
+    @Override
     public String getName() {
         return this.raw.getName();
     }
@@ -83,6 +89,7 @@ public class ReflectField<T> implements IReflectField<T> {
      *
      * @return the current field value
      */
+    @Override
     public T getValue() {
         return this.getProcessor().get(this.isStatic() ? null : this.getDeclaringClass().getValue());
     }
@@ -93,7 +100,7 @@ public class ReflectField<T> implements IReflectField<T> {
      * @param value the new value to assign
      * @return this field reflector for chaining
      */
-
+    @Override
     public IReflectField<T> setValue(T value) {
         this.getProcessor().set(this.isStatic() ? null : this.getDeclaringClass().getValue(), value);
         return this;
@@ -130,5 +137,27 @@ public class ReflectField<T> implements IReflectField<T> {
     @Override
     public <A extends Annotation> A getAnnotation(Class<A> annotation) {
         return this.raw.getAnnotation(annotation);
+    }
+
+    /**
+     * Casts this reflective handle to another type without changing underlying value.
+     *
+     * @param <R>  target type
+     * @param type class object of the target type (ignored)
+     * @return this instance as {@code ReflectField<R>}
+     */
+    public <R> ReflectField<R> cast(Class<R> type) {
+        return this.cast();
+    }
+
+    /**
+     * Casts this reflective handle to another type without changing underlying value.
+     *
+     * @param <R> target type
+     * @return this instance as {@code ContextMethod<R>}
+     */
+    @SuppressWarnings("unchecked")
+    public <R> ReflectField<R> cast() {
+        return (ReflectField<R>) this;
     }
 }
