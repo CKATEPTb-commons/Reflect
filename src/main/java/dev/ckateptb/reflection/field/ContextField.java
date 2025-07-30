@@ -47,4 +47,26 @@ public class ContextField<T> extends ReflectField<T> {
     public <R> IReflectClass<R> getDeclaringClass() {
         return (IReflectClass<R>) this.owner;
     }
+
+    /**
+     * Casts this reflective handle to another type without changing underlying value.
+     *
+     * @param <R>  target type
+     * @param type class object of the target type (ignored)
+     * @return this instance as {@code ContextField<R>}
+     */
+    public <R> ContextField<R> cast(Class<R> type) {
+        return this.cast();
+    }
+
+    /**
+     * Casts this reflective handle to another type without changing underlying value.
+     *
+     * @param <R> target type
+     * @return this instance as {@code ContextField<R>}
+     */
+    @SuppressWarnings("unchecked")
+    public <R> ContextField<R> cast() {
+        return (ContextField<R>) this;
+    }
 }
