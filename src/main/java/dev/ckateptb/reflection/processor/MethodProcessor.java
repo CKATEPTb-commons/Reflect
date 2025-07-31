@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.function.BiFunction;
 
 /**
@@ -47,7 +48,14 @@ public class MethodProcessor<T> implements Processor {
             try {
                 MethodHandle handle = MethodHandles.privateLookupIn(method.getDeclaringClass(), MethodHandles.lookup())
                         .unreflect(method);
-                return new MethodProcessor<>(
+                return Modifier.isStatic(method.getModifiers()) ? new MethodProcessor<>(
+                        (target, args) -> {
+                            try {
+                                return (T) handle.invokeWithArguments(args);
+                            } catch (Throwable e) {
+                                throw new RuntimeException(e);
+                            }
+                        }) : new MethodProcessor<>(
                         (target, args) -> {
                             try {
                                 return (T) handle.bindTo(target).invokeWithArguments(args);
