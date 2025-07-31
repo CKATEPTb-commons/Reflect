@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -56,7 +57,10 @@ public class FieldProcessor<T> implements Processor {
             try {
                 VarHandle varHandle = MethodHandles.privateLookupIn(field.getDeclaringClass(), MethodHandles.lookup())
                         .unreflectVarHandle(field);
-                return new FieldProcessor<>(
+                return Modifier.isStatic(field.getModifiers()) ? new FieldProcessor<>(
+                        (target) -> (T) varHandle.get(),
+                        (target, args) -> varHandle.set(args)
+                ) : new FieldProcessor<>(
                         (target) -> (T) varHandle.get(target),
                         varHandle::set
                 );
