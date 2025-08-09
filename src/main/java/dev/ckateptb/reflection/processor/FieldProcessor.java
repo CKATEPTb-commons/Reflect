@@ -1,7 +1,5 @@
 package dev.ckateptb.reflection.processor;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -9,7 +7,9 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -29,7 +29,7 @@ public class FieldProcessor<T> implements Processor {
     /**
      * Cache of FieldProcessor instances keyed by Field.
      */
-    private static final Cache<Field, FieldProcessor<?>> PROCESSORS = Caffeine.newBuilder().build();
+    private static final Map<Field, FieldProcessor<?>> PROCESSORS = new ConcurrentHashMap<>();
     /**
      * Function to get the field value from a target instance.
      */
@@ -52,7 +52,7 @@ public class FieldProcessor<T> implements Processor {
      */
     @SuppressWarnings("unchecked")
     static <T> FieldProcessor<T> from(Field field) {
-        return (FieldProcessor<T>) PROCESSORS.get(field, key -> {
+        return (FieldProcessor<T>) PROCESSORS.computeIfAbsent(field, key -> {
             field.trySetAccessible();
             try {
                 VarHandle varHandle = MethodHandles.privateLookupIn(field.getDeclaringClass(), MethodHandles.lookup())

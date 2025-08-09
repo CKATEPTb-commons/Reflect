@@ -1,7 +1,5 @@
 package dev.ckateptb.reflection.processor;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -9,6 +7,8 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
 /**
@@ -28,7 +28,7 @@ public class MethodProcessor<T> implements Processor {
     /**
      * Cache of MethodProcessor instances keyed by Method.
      */
-    private static final Cache<Method, MethodProcessor<?>> PROCESSORS = Caffeine.newBuilder().build();
+    private static final Map<Method, MethodProcessor<?>> PROCESSORS = new ConcurrentHashMap<>();
 
     /**
      * Creates or retrieves a cached {@link MethodProcessor} for the given method.
@@ -43,7 +43,7 @@ public class MethodProcessor<T> implements Processor {
      */
     @SuppressWarnings("unchecked")
     static <T> MethodProcessor<T> from(Method method) {
-        return (MethodProcessor<T>) PROCESSORS.get(method, key -> {
+        return (MethodProcessor<T>) PROCESSORS.computeIfAbsent(method, key -> {
             method.trySetAccessible();
             try {
                 MethodHandle handle = MethodHandles.privateLookupIn(method.getDeclaringClass(), MethodHandles.lookup())

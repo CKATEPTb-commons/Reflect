@@ -1,6 +1,6 @@
 var javaVersion = 11;
 group = "dev.ckateptb.commons"
-version = "3.0.3"
+version = "3.0.4"
 
 plugins {
     id("java-library")
@@ -20,8 +20,6 @@ repositories {
 }
 
 dependencies {
-    // Cache
-    implementation("com.github.ben-manes.caffeine:caffeine:3.2.1")
     // Lombok
     compileOnly("org.projectlombok:lombok:1.18.38")
     annotationProcessor("org.projectlombok:lombok:1.18.38")

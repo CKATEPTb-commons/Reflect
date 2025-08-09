@@ -1,7 +1,5 @@
 package dev.ckateptb.reflection.processor;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 
@@ -9,6 +7,8 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
@@ -27,7 +27,7 @@ public class ConstructorProcessor<T> implements Processor {
     /**
      * Cache of ConstructorProcessor instances keyed by Constructor.
      */
-    private static final Cache<Constructor<?>, ConstructorProcessor<?>> PROCESSORS = Caffeine.newBuilder().build();
+    private static final Map<Constructor<?>, ConstructorProcessor<?>> PROCESSORS = new ConcurrentHashMap<>();
 
     /**
      * Creates or retrieves a cached {@link ConstructorProcessor} for the given constructor.
@@ -42,7 +42,7 @@ public class ConstructorProcessor<T> implements Processor {
      */
     @SuppressWarnings("unchecked")
     static <T> ConstructorProcessor<T> from(Constructor<?> constructor) {
-        return (ConstructorProcessor<T>) PROCESSORS.get(constructor, key -> {
+        return (ConstructorProcessor<T>) PROCESSORS.computeIfAbsent(constructor, key -> {
             constructor.trySetAccessible();
             try {
                 MethodHandle handle = MethodHandles.privateLookupIn(constructor.getDeclaringClass(), MethodHandles.lookup())

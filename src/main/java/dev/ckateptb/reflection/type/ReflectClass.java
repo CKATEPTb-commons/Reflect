@@ -1,7 +1,5 @@
 package dev.ckateptb.reflection.type;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import dev.ckateptb.reflection.Reflect;
 import dev.ckateptb.reflection.constructor.IReflectConstructor;
 import dev.ckateptb.reflection.constructor.ReflectConstructor;
@@ -17,6 +15,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -49,15 +49,15 @@ public class ReflectClass<T> implements IReflectClass<T> {
     /**
      * Cache for reflective field wrappers.
      */
-    private final Cache<Field, ReflectField<?>> fields = Caffeine.newBuilder().build(); // Кеш полей
+    private final Map<Field, ReflectField<?>> fields = new ConcurrentHashMap<>(); // Кеш полей
     /**
      * Cache for reflective method wrappers.
      */
-    private final Cache<Method, ReflectMethod<?>> methods = Caffeine.newBuilder().build();
+    private final Map<Method, ReflectMethod<?>> methods = new ConcurrentHashMap<>();
     /**
      * Cache for reflective constructor wrappers.
      */
-    private final Cache<Constructor<T>, ReflectConstructor<T>> constructors = Caffeine.newBuilder().build();
+    private final Map<Constructor<T>, ReflectConstructor<T>> constructors = new ConcurrentHashMap<>();
     /**
      * Atomic flags tracking which caches have been initialized.
      */
@@ -92,18 +92,18 @@ public class ReflectClass<T> implements IReflectClass<T> {
         if (!this.hasFlag(FLAG_F)) {
             Class<? super T> superclass = this.type.getSuperclass();
             for (Field field : this.type.getDeclaredFields()) {
-                this.fields.get(field, ReflectField::new);
+                this.fields.computeIfAbsent(field, ReflectField::new);
             }
             if (superclass != null) {
                 Reflect.on(superclass).getFields().forEach(field -> {
                     if (field instanceof ReflectField<?>) {
-                        this.fields.get(field.getRaw(), (key) -> (ReflectField<?>) field);
+                        this.fields.computeIfAbsent(field.getRaw(), (key) -> (ReflectField<?>) field);
                     }
                 });
             }
             this.addFlag(FLAG_F);
         }
-        return this.fields.asMap().values()
+        return this.fields.values()
                 .stream()
                 .filter(filter)
                 .collect(Collectors.toUnmodifiableList());
@@ -119,25 +119,25 @@ public class ReflectClass<T> implements IReflectClass<T> {
         if (!this.hasFlag(FLAG_M)) {
             Class<? super T> superclass = this.type.getSuperclass();
             for (Method method : this.type.getDeclaredMethods()) {
-                this.methods.get(method, ReflectMethod::new);
+                this.methods.computeIfAbsent(method, ReflectMethod::new);
             }
             if (superclass != null) {
                 Reflect.on(superclass).getMethodsByFilter(ignored -> true).forEach(method -> {
                     if (method instanceof ReflectMethod<?>) {
-                        this.methods.get(method.getRaw(), (key) -> (ReflectMethod<?>) method);
+                        this.methods.computeIfAbsent(method.getRaw(), (key) -> (ReflectMethod<?>) method);
                     }
                 });
             }
             for (Class<?> clazz : this.type.getInterfaces()) {
                 Reflect.on(clazz).getMethodsByFilter(ignored -> true).forEach(method -> {
                     if (method instanceof ReflectMethod<?>) {
-                        this.methods.get(method.getRaw(), (key) -> (ReflectMethod<?>) method);
+                        this.methods.computeIfAbsent(method.getRaw(), (key) -> (ReflectMethod<?>) method);
                     }
                 });
             }
             this.addFlag(FLAG_M);
         }
-        return this.methods.asMap().values()
+        return this.methods.values()
                 .stream()
                 .filter(filter)
                 .collect(Collectors.toUnmodifiableList());
@@ -154,11 +154,11 @@ public class ReflectClass<T> implements IReflectClass<T> {
     public Collection<IReflectConstructor<T>> getConstructorsByFilter(Predicate<IReflectConstructor<T>> filter) {
         if (!this.hasFlag(FLAG_C)) {
             for (Constructor<T> constructor : (Constructor<T>[]) this.type.getDeclaredConstructors()) {
-                this.constructors.get(constructor, ReflectConstructor::new);
+                this.constructors.computeIfAbsent(constructor, ReflectConstructor::new);
             }
             this.addFlag(FLAG_C);
         }
-        return this.constructors.asMap().values()
+        return this.constructors.values()
                 .stream()
                 .filter(filter)
                 .collect(Collectors.toUnmodifiableList());
