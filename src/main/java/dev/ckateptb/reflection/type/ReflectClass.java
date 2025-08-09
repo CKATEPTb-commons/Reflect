@@ -215,4 +215,20 @@ public class ReflectClass<T> implements IReflectClass<T> {
     public <A extends Annotation> A getAnnotation(Class<A> annotation) {
         return this.type.getAnnotation(annotation);
     }
+
+    /**
+     * Returns the simple name of the underlying class as given in the
+     * source code. Returns an empty string if the underlying class is
+     * anonymous.
+     *
+     * <p>The simple name of an array is the simple name of the
+     * component type with "[]" appended.  In particular the simple
+     * name of an array whose component type is anonymous is "[]".
+     *
+     * @return the simple name of the underlying class
+     */
+    @Override
+    public String getSimpleName() {
+        return this.type.getSimpleName();
+    }
 }

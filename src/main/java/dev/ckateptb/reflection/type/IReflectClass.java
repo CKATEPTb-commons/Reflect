@@ -378,6 +378,15 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     }
 
     /**
+     * Retrieves the name of this target.
+     *
+     * @return the target name
+     */
+    default String getSimpleName() {
+        return this.getName();
+    }
+
+    /**
      * Retrieves the {@link Class} object wrapped by this reflector.
      *
      * @return the underlying {@code Class<T>}
