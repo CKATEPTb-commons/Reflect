@@ -22,57 +22,8 @@ import java.util.function.Function;
  *
  * @param <T> the type produced by the constructor invocation
  */
-@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class ConstructorProcessor<T> implements Processor {
-    /**
-     * Cache of ConstructorProcessor instances keyed by Constructor.
-     */
-    private static final Map<Constructor<?>, ConstructorProcessor<?>> PROCESSORS = new ConcurrentHashMap<>();
-
-    /**
-     * Creates or retrieves a cached {@link ConstructorProcessor} for the given constructor.
-     * <p>
-     * Attempts to look up a {@link MethodHandle} for the constructor via private lookup,
-     * falling back to reflective {@code newInstance} if access handling fails.
-     * </p>
-     *
-     * @param constructor the {@link Constructor} to process
-     * @param <T>         the type constructed
-     * @return a cached ConstructorProcessor configured for the given constructor
-     */
-    @SuppressWarnings("unchecked")
-    static <T> ConstructorProcessor<T> from(Constructor<?> constructor) {
-        return (ConstructorProcessor<T>) PROCESSORS.computeIfAbsent(constructor, key -> {
-            constructor.trySetAccessible();
-            try {
-                MethodHandle handle = MethodHandles.privateLookupIn(constructor.getDeclaringClass(), MethodHandles.lookup())
-                        .findConstructor(
-                                constructor.getDeclaringClass(),
-                                MethodType.methodType(void.class, constructor.getParameterTypes())
-                        );
-                return new ConstructorProcessor<>(
-                        (args) -> {
-                            try {
-                                return (T) handle.invokeWithArguments(args);
-                            } catch (Throwable e) {
-                                throw new RuntimeException(e);
-                            }
-                        }
-                );
-            } catch (IllegalAccessException | NoSuchMethodException e) {
-                return new ConstructorProcessor<>(
-                        (args) -> {
-                            try {
-                                return constructor.newInstance(args);
-                            } catch (Exception ex) {
-                                throw new RuntimeException(ex);
-                            }
-                        }
-                );
-            }
-        });
-    }
-
+@RequiredArgsConstructor
+public class ConstructorProcessor<T> {
     /**
      * Underlying invocation function accepting constructor arguments.
      */

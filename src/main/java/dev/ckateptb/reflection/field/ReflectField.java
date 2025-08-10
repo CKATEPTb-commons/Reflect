@@ -5,15 +5,19 @@ import dev.ckateptb.reflection.api.AnnotationHolder;
 import dev.ckateptb.reflection.api.ModifierHolder;
 import dev.ckateptb.reflection.api.NameHolder;
 import dev.ckateptb.reflection.api.ValueHolder;
-import dev.ckateptb.reflection.constructor.ReflectConstructor;
+import dev.ckateptb.reflection.atomic.AtomicOnce;
 import dev.ckateptb.reflection.processor.FieldProcessor;
-import dev.ckateptb.reflection.processor.Processor;
 import dev.ckateptb.reflection.type.IReflectClass;
 import lombok.Getter;
 import lombok.experimental.Delegate;
 
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.concurrent.Callable;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
@@ -32,11 +36,21 @@ public class ReflectField<T> implements IReflectField<T> {
      */
     @Getter
     private final Field raw;
+
     /**
      * Reflective representation of the field's type.
      */
     @Delegate(excludes = {AnnotationHolder.class, ModifierHolder.class, NameHolder.class, ValueHolder.class})
     private final IReflectClass<T> type;
+
+    /**
+     * Lazy, thread-safe holder of the {@link FieldProcessor} instance.
+     * <p>
+     * The processor is computed at most once. The first caller executes the
+     * supplier synchronously; concurrent callers wait and reuse the same instance.
+     * </p>
+     */
+    private final AtomicOnce<FieldProcessor<T>> processor = new AtomicOnce<>();
 
     /**
      * Constructs a new ReflectField for the given raw field.
@@ -111,8 +125,38 @@ public class ReflectField<T> implements IReflectField<T> {
      *
      * @return the FieldProcessor bound to the raw field
      */
+    @SuppressWarnings("unchecked")
     public FieldProcessor<T> getProcessor() {
-        return Processor.from(this.raw);
+        return this.processor.getOrCompute(() -> {
+            this.raw.trySetAccessible();
+            try {
+                VarHandle varHandle = MethodHandles.privateLookupIn(this.raw.getDeclaringClass(), MethodHandles.lookup())
+                        .unreflectVarHandle(this.raw);
+                return Modifier.isStatic(this.getModifiers()) ? new FieldProcessor<>(
+                        (target) -> (T) varHandle.get(),
+                        (target, args) -> varHandle.set(args)
+                ) : new FieldProcessor<>(
+                        (target) -> (T) varHandle.get(target),
+                        varHandle::set
+                );
+            } catch (IllegalAccessException e) {
+                final BiFunction<Object, Callable<T>, T> tryAccess = (target, callable) -> {
+                    if (!this.raw.canAccess(target)) this.raw.setAccessible(true);
+                    try {
+                        return callable.call();
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                };
+                return new FieldProcessor<T>(
+                        (target) -> tryAccess.apply(target, () -> (T) this.raw.get(target)),
+                        (target, value) -> tryAccess.apply(target, () -> {
+                            this.raw.set(target, value);
+                            return null;
+                        })
+                );
+            }
+        });
     }
 
     /**
