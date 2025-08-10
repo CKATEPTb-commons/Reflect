@@ -4,9 +4,7 @@ import dev.ckateptb.reflection.type.IReflectClass;
 import dev.ckateptb.reflection.type.ReflectClass;
 import lombok.SneakyThrows;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Utility entry point for reflection operations.
@@ -19,7 +17,12 @@ public class Reflect {
     /**
      * Cache of reflective class wrappers, keyed by the target class.
      */
-    private static final Map<Class<?>, ReflectClass<?>> classes = new ConcurrentHashMap<>();
+    private static final ClassValue<ReflectClass<?>> classes = new ClassValue<>() {
+        @Override
+        protected ReflectClass<?> computeValue(Class<?> type) {
+            return new ReflectClass<>(type);
+        }
+    };
 
 
     /**
@@ -50,7 +53,7 @@ public class Reflect {
      */
     @SuppressWarnings("unchecked")
     public static <T> IReflectClass<T> on(Class<T> clazz) {
-        return (ReflectClass<T>) classes.computeIfAbsent(clazz, ReflectClass::new);
+        return (ReflectClass<T>) classes.get(clazz);
     }
 
     /**
