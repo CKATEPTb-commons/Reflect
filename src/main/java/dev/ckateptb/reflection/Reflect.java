@@ -31,10 +31,9 @@ public class Reflect {
      *
      * @param clazz the fully qualified name of the class to reflect
      * @return a {@link IReflectClass} for the loaded class
-     * @throws ClassNotFoundException if the class cannot be found
      */
     @SneakyThrows
-    public static IReflectClass<?> on(String clazz) throws ClassNotFoundException {
+    public static IReflectClass<?> on(String clazz) {
         ClassLoader classLoader = Optional.ofNullable(
                 Thread.currentThread().getContextClassLoader()
         ).orElse(Reflect.class.getClassLoader());
