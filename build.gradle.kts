@@ -5,7 +5,6 @@ version = "3.0.4"
 plugins {
     id("java-library")
     id("maven-publish")
-    id("io.spring.dependency-management").version("1.1.7")
     id("io.github.gradle-nexus.publish-plugin").version("1.1.0")
 }
 

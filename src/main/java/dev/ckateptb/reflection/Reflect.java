@@ -1,10 +1,14 @@
 package dev.ckateptb.reflection;
 
+import dev.ckateptb.reflection.file.ReflectFile;
 import dev.ckateptb.reflection.type.IReflectClass;
 import dev.ckateptb.reflection.type.ReflectClass;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 
 import java.util.Optional;
+import java.util.jar.JarFile;
 
 /**
  * Utility entry point for reflection operations.
@@ -14,6 +18,34 @@ import java.util.Optional;
  * </p>
  */
 public class Reflect {
+    // noinspection FieldMayBeFinal
+    /**
+     * The {@link ClassLoader} used for all reflection operations.
+     * <p>
+     * By default, this is initialized to the current thread's context ClassLoader.
+     * If that is {@code null}, it falls back to the ClassLoader that loaded
+     * {@code Reflect} itself.
+     * </p>
+     * <p>
+     * If necessary, you can change this ClassLoader at runtime via reflection.
+     * </p>
+     * -- GETTER --
+     *  Returns the current class loader.
+     *
+     *
+     * -- SETTER --
+     *  Sets a new class loader.
+     *
+     @return the class loader
+      * @param newClassLoader the new class loader to set
+
+     */
+    @Setter
+    @Getter
+    private static ClassLoader classLoader = Optional.ofNullable(
+            Thread.currentThread().getContextClassLoader()
+    ).orElse(Reflect.class.getClassLoader());
+
     /**
      * Cache of reflective class wrappers, keyed by the target class.
      */
@@ -24,6 +56,9 @@ public class Reflect {
         }
     };
 
+    public static ReflectFile scan(JarFile jar) {
+        return new ReflectFile(jar);
+    }
 
     /**
      * Loads the class with the given fully qualified name and returns its reflective wrapper.
@@ -37,11 +72,7 @@ public class Reflect {
      */
     @SneakyThrows
     public static IReflectClass<?> on(String clazz) {
-        ClassLoader classLoader = Optional.ofNullable(
-                Thread.currentThread().getContextClassLoader()
-        ).orElse(Reflect.class.getClassLoader());
-        Class<?> raw = Class.forName(clazz, false, classLoader);
-        return Reflect.on(raw);
+        return Reflect.on(Class.forName(clazz, false, classLoader));
     }
 
     /**

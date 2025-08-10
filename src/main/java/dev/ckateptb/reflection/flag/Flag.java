@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
  * }</pre>
  *
  */
-@Getter
 @RequiredArgsConstructor
 public enum Flag {
     /**
@@ -40,5 +39,9 @@ public enum Flag {
      * Flag indicating classes have been cached.
      */
     CLASSES_CACHED(1 << 3);
-    private final int mask; // как назвать переменную?
+    private final int mask;
+
+    public int getMask() {
+        return this.mask;
+    }
 }
