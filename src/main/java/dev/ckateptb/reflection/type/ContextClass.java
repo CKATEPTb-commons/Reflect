@@ -125,4 +125,20 @@ public class ContextClass<T> implements IReflectClass<T> {
     public String getName() {
         return this.delegate.getName();
     }
+
+    /**
+     * Returns the simple name of the underlying class as given in the
+     * source code. Returns an empty string if the underlying class is
+     * anonymous.
+     *
+     * <p>The simple name of an array is the simple name of the
+     * component type with "[]" appended.  In particular the simple
+     * name of an array whose component type is anonymous is "[]".
+     *
+     * @return the simple name of the underlying class
+     */
+    @Override
+    public String getSimpleName() {
+        return this.delegate.getSimpleName();
+    }
 }

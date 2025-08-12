@@ -1,12 +1,14 @@
 package dev.ckateptb.reflection;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import dev.ckateptb.reflection.file.ReflectFile;
 import dev.ckateptb.reflection.type.IReflectClass;
 import dev.ckateptb.reflection.type.ReflectClass;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 
 import java.util.Optional;
+import java.util.jar.JarFile;
 
 /**
  * Utility entry point for reflection operations.
@@ -16,11 +18,43 @@ import java.util.Optional;
  * </p>
  */
 public class Reflect {
+    // noinspection FieldMayBeFinal
+    /**
+     * The {@link ClassLoader} used for all reflection operations.
+     * <p>
+     * By default, this is initialized to the current thread's context ClassLoader.
+     * If that is {@code null}, it falls back to the ClassLoader that loaded
+     * {@code Reflect} itself.
+     * </p>
+     * <p>
+     * If necessary, you can change this ClassLoader at runtime via reflection.
+     * </p>
+     */
+    @Setter
+    @Getter
+    private static ClassLoader classLoader = Optional.ofNullable(
+            Thread.currentThread().getContextClassLoader()
+    ).orElse(Reflect.class.getClassLoader());
+
     /**
      * Cache of reflective class wrappers, keyed by the target class.
      */
-    private static final Cache<Class<?>, ReflectClass<?>> classes = Caffeine.newBuilder().build();
+    private static final ClassValue<ReflectClass<?>> classes = new ClassValue<>() {
+        @Override
+        protected ReflectClass<?> computeValue(Class<?> type) {
+            return new ReflectClass<>(type);
+        }
+    };
 
+    /**
+     * Scans a JarFile and returns a ReflectFile object representing the scanned content.
+     *
+     * @param jar The JarFile to be scanned.
+     * @return A ReflectFile object containing information about the contents of the JarFile.
+     */
+    public static ReflectFile scan(JarFile jar) {
+        return new ReflectFile(jar);
+    }
 
     /**
      * Loads the class with the given fully qualified name and returns its reflective wrapper.
@@ -31,15 +65,10 @@ public class Reflect {
      *
      * @param clazz the fully qualified name of the class to reflect
      * @return a {@link IReflectClass} for the loaded class
-     * @throws ClassNotFoundException if the class cannot be found
      */
     @SneakyThrows
-    public static IReflectClass<?> on(String clazz) throws ClassNotFoundException {
-        ClassLoader classLoader = Optional.ofNullable(
-                Thread.currentThread().getContextClassLoader()
-        ).orElse(Reflect.class.getClassLoader());
-        Class<?> raw = Class.forName(clazz, false, classLoader);
-        return Reflect.on(raw);
+    public static IReflectClass<?> on(String clazz) {
+        return Reflect.on(Class.forName(clazz, false, classLoader));
     }
 
     /**
@@ -51,7 +80,7 @@ public class Reflect {
      */
     @SuppressWarnings("unchecked")
     public static <T> IReflectClass<T> on(Class<T> clazz) {
-        return (ReflectClass<T>) classes.get(clazz, ReflectClass::new);
+        return (ReflectClass<T>) classes.get(clazz);
     }
 
     /**
