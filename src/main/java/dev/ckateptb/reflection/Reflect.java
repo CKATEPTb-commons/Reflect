@@ -46,6 +46,12 @@ public class Reflect {
         }
     };
 
+    /**
+     * Scans a JarFile and returns a ReflectFile object representing the scanned content.
+     *
+     * @param jar The JarFile to be scanned.
+     * @return A ReflectFile object containing information about the contents of the JarFile.
+     */
     public static ReflectFile scan(JarFile jar) {
         return new ReflectFile(jar);
     }
