@@ -387,6 +387,25 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     }
 
     /**
+     * Checks if this object can be considered an instance of the specified class.
+     *
+     * @param clazz The class to check against.
+     * @return true if this object's type is assignable from the specified class, false otherwise.
+     */
+    default boolean isInstanceOf(Class<?> clazz) {
+        return clazz.isAssignableFrom(this.getType());
+    }
+
+    /**
+     * Returns the package name of the type associated with this instance.
+     *
+     * @return The package name as a String, or an empty string if no package is associated.
+     */
+    default String getPackage() {
+        return this.getType().getPackageName();
+    }
+
+    /**
      * Retrieves the {@link Class} object wrapped by this reflector.
      *
      * @return the underlying {@code Class<T>}

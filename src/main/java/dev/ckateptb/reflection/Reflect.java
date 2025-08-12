@@ -29,16 +29,6 @@ public class Reflect {
      * <p>
      * If necessary, you can change this ClassLoader at runtime via reflection.
      * </p>
-     * -- GETTER --
-     *  Returns the current class loader.
-     *
-     *
-     * -- SETTER --
-     *  Sets a new class loader.
-     *
-     @return the class loader
-      * @param newClassLoader the new class loader to set
-
      */
     @Setter
     @Getter

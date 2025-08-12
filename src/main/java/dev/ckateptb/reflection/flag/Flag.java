@@ -1,6 +1,5 @@
 package dev.ckateptb.reflection.flag;
 
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -41,6 +40,11 @@ public enum Flag {
     CLASSES_CACHED(1 << 3);
     private final int mask;
 
+    /**
+     * Retrieves the current bit-mask value.
+     *
+     * @return The current bit-mask value.
+     */
     public int getMask() {
         return this.mask;
     }
