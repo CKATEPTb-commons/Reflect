@@ -43,8 +43,17 @@ import java.util.function.Supplier;
  * @param <T> type of the lazily computed value
  */
 public final class AtomicOnce<T> {
+    /**
+     * A thread-safe way to compute and cache the result of a supplier.
+     */
     private final AtomicReference<FutureTask<T>> ref = new AtomicReference<>();
 
+    /**
+     * Returns the cached result or computes it if not already done.
+     *
+     * @param sup the supplier to compute the value with
+     * @return the computed result
+     */
     @SneakyThrows
     public T getOrCompute(Supplier<? extends T> sup) {
         FutureTask<T> future = this.ref.get();
