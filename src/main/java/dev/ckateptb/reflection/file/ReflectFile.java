@@ -12,7 +12,10 @@ import java.io.File;
 import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -84,7 +87,7 @@ public class ReflectFile extends FlagTracker {
     /**
      * Retrieves classes within a specific package, optionally recursively.
      *
-     * @param pkg The package name to filter by.
+     * @param pkg       The package name to filter by.
      * @param recursive Whether to include sub-packages.
      * @return A collection of classes in the specified package and its sub-packages if recursive is true.
      */
