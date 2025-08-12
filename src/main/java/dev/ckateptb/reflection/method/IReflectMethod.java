@@ -1,6 +1,5 @@
 package dev.ckateptb.reflection.method;
 
-import dev.ckateptb.reflection.field.IReflectField;
 import dev.ckateptb.reflection.parameter.ReflectParameter;
 import dev.ckateptb.reflection.type.IReflectClass;
 
@@ -82,6 +81,7 @@ public interface IReflectMethod<T> extends IReflectClass<T> {
      * @return an {@link IReflectClass} representing the declaring class
      */
     <R> IReflectClass<R> getDeclaringClass();
+
     /**
      * Casts this reflective handle to another type without changing underlying value.
      *

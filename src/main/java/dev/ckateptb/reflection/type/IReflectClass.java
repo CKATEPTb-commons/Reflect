@@ -261,18 +261,20 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
 
     /**
      * Finds a constructor by parameter types.
+     *
      * @param params - constructor parameters
      * @return an optional of {@link IReflectConstructor}
      */
     default Optional<IReflectConstructor<T>> getConstructorWithParameters(Class<?>... params) {
         return this.getConstructorsByFilter(constructor ->
-                        Arrays.equals(constructor.getParameters().stream()
-                                .map(ReflectParameter::getType)
-                                .toArray(Class[]::new), params)).stream().findFirst();
+                Arrays.equals(constructor.getParameters().stream()
+                        .map(ReflectParameter::getType)
+                        .toArray(Class[]::new), params)).stream().findFirst();
     }
 
     /**
      * Finds a constructor by raw parameters.
+     *
      * @param params - constructor parameters
      * @return an optional of {@link IReflectConstructor}
      */
@@ -282,6 +284,7 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
 
     /**
      * Finds a constructor by reflective parameter types.
+     *
      * @param params - constructor parameters
      * @return an optional of {@link IReflectConstructor}
      */
@@ -291,14 +294,15 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
 
     /**
      * Finds a constructor by parameter names.
+     *
      * @param paramNames - constructor parameters name
      * @return an optional of {@link IReflectConstructor}
      */
     default Optional<IReflectConstructor<T>> getConstructorWithParameters(String... paramNames) {
         return this.getConstructorsByFilter(constructor ->
-                        Arrays.equals(constructor.getParameters().stream()
-                                .map(ReflectParameter::getName)
-                                .toArray(String[]::new), paramNames)).stream().findFirst();
+                Arrays.equals(constructor.getParameters().stream()
+                        .map(ReflectParameter::getName)
+                        .toArray(String[]::new), paramNames)).stream().findFirst();
     }
 
     /**
@@ -313,6 +317,7 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
 
     /**
      * Retrieves constructors annotated with the specified annotation.
+     *
      * @param annotation - annotation type
      * @return a collection of {@link IReflectConstructor}
      *

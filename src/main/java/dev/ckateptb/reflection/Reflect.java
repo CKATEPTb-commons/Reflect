@@ -20,6 +20,15 @@ import java.util.jar.JarFile;
 public class Reflect {
     // noinspection FieldMayBeFinal
     /**
+     * Cache of reflective class wrappers, keyed by the target class.
+     */
+    private static final ClassValue<ReflectClass<?>> classes = new ClassValue<>() {
+        @Override
+        protected ReflectClass<?> computeValue(Class<?> type) {
+            return new ReflectClass<>(type);
+        }
+    };
+    /**
      * The {@link ClassLoader} used for all reflection operations.
      * <p>
      * By default, this is initialized to the current thread's context ClassLoader.
@@ -35,16 +44,6 @@ public class Reflect {
     private static ClassLoader classLoader = Optional.ofNullable(
             Thread.currentThread().getContextClassLoader()
     ).orElse(Reflect.class.getClassLoader());
-
-    /**
-     * Cache of reflective class wrappers, keyed by the target class.
-     */
-    private static final ClassValue<ReflectClass<?>> classes = new ClassValue<>() {
-        @Override
-        protected ReflectClass<?> computeValue(Class<?> type) {
-            return new ReflectClass<>(type);
-        }
-    };
 
     /**
      * Scans a JarFile and returns a ReflectFile object representing the scanned content.
