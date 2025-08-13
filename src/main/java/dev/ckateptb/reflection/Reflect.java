@@ -46,7 +46,6 @@ public class Reflect {
             Thread.currentThread().getContextClassLoader()
     ).orElse(Reflect.class.getClassLoader());
 
-
     /**
      * Scans the default jar file of the provided class to create a ReflectFile object.
      *
