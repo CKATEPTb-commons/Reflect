@@ -4,7 +4,7 @@
 ------
 
 <p align="center">
-A lightweight Java reflection utility library providing a fluent, cached API for inspecting and manipulating classes, fields, methods, constructors, annotations, and modifiers.
+A lightweight Java threadsafe reflection utility library providing a fluent, cached API for inspecting and manipulating classes, fields, methods, constructors, annotations, and modifiers.
 </p>
 
 ------
@@ -30,6 +30,8 @@ A lightweight Java reflection utility library providing a fluent, cached API for
 * Type-Safe Wrappers: Reflective handles provide compile-time safety and automatic generic casting.
 
 * High Performance: Internal caching of reflection metadata and use of MethodHandle/VarHandle optimizations.
+
+* Thread-Safe: Fully synchronized and safe for concurrent use in multithreaded environments.
 
 * Annotation & Modifier Queries: Simplified APIs to check annotations and modifiers on members.
 
