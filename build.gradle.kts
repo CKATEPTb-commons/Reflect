@@ -1,6 +1,6 @@
 var javaVersion = 11;
 group = "dev.ckateptb.commons"
-version = "3.1.1"
+version = "3.2.0"
 
 plugins {
     id("java-library")

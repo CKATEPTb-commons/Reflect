@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
+import java.io.File;
 import java.util.Optional;
 import java.util.jar.JarFile;
 
@@ -44,6 +45,31 @@ public class Reflect {
     private static ClassLoader classLoader = Optional.ofNullable(
             Thread.currentThread().getContextClassLoader()
     ).orElse(Reflect.class.getClassLoader());
+
+
+    /**
+     * Scans the default jar file of the provided class to create a ReflectFile object.
+     *
+     * @return ReflectFile object containing information from the scanned jar file.
+     */
+    public static ReflectFile scan() {
+        return scan(ReflectFile.class);
+    }
+
+    /**
+     * Scans the specified jar file to create a ReflectFile object.
+     *
+     * @param clazz The class whose protection domain is used to locate the jar file.
+     * @return ReflectFile object containing information from the scanned jar file.
+     */
+    @SneakyThrows
+    public static ReflectFile scan(Class<?> clazz) {
+        return scan(new JarFile(new File(clazz
+                .getProtectionDomain()
+                .getCodeSource()
+                .getLocation()
+                .toURI())));
+    }
 
     /**
      * Scans a JarFile and returns a ReflectFile object representing the scanned content.
