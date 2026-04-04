@@ -37,6 +37,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     Collection<IReflectField<?>> getFieldsByFilter(Predicate<IReflectField<?>> filter);
 
     /**
+     * Finds the first field matching the given predicate.
+     *
+     * @param filter predicate to apply to each field
+     * @return an Optional containing the first {@link IReflectField} satisfying the filter
+     */
+    default Optional<IReflectField<?>> findFirstFieldByFilter(Predicate<IReflectField<?>> filter) {
+        return this.getFieldsByFilter(filter).stream().findFirst();
+    }
+
+    /**
+     * Retrieves the first field matching the given predicate.
+     *
+     * @param filter predicate to apply to each field
+     * @return the first {@link IReflectField} satisfying the filter
+     * @throws java.util.NoSuchElementException if no field matches
+     */
+    default IReflectField<?> getFirstFieldByFilter(Predicate<IReflectField<?>> filter) {
+        return this.findFirstFieldByFilter(filter).orElseThrow();
+    }
+
+    /**
      * Retrieves fields annotated with the specified annotation type.
      *
      * @param annotation the annotation to look for
@@ -44,6 +65,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      */
     default Collection<IReflectField<?>> getFieldsWithAnnotation(Class<? extends Annotation> annotation) {
         return this.getFieldsByFilter(field -> field.isAnnotationPresent(annotation));
+    }
+
+    /**
+     * Finds the first field annotated with the specified annotation type.
+     *
+     * @param annotation the annotation to look for
+     * @return an Optional containing the first field bearing the given annotation
+     */
+    default Optional<IReflectField<?>> findFirstFieldWithAnnotation(Class<? extends Annotation> annotation) {
+        return this.getFieldsByFilter(field -> field.isAnnotationPresent(annotation)).stream().findFirst();
+    }
+
+    /**
+     * Retrieves the first field annotated with the specified annotation type.
+     *
+     * @param annotation the annotation to look for
+     * @return the first field bearing the given annotation
+     * @throws java.util.NoSuchElementException if no field matches
+     */
+    default IReflectField<?> getFirstFieldWithAnnotation(Class<? extends Annotation> annotation) {
+        return this.findFirstFieldWithAnnotation(annotation).orElseThrow();
     }
 
     /**
@@ -58,6 +100,29 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     }
 
     /**
+     * Finds the first field whose type is assignable from the given reflective class.
+     *
+     * @param <R>  the target field type
+     * @param type the {@link IReflectClass} representing the desired field type
+     * @return an Optional containing the first field of the specified type
+     */
+    default <R> Optional<IReflectField<R>> findFirstFieldWithType(IReflectClass<R> type) {
+        return this.getFieldsWithType(type).stream().findFirst();
+    }
+
+    /**
+     * Retrieves the first field whose type is assignable from the given reflective class.
+     *
+     * @param <R>  the target field type
+     * @param type the {@link IReflectClass} representing the desired field type
+     * @return the first field of the specified type
+     * @throws java.util.NoSuchElementException if no field matches
+     */
+    default <R> IReflectField<R> getFirstFieldWithType(IReflectClass<R> type) {
+        return this.findFirstFieldWithType(type).orElseThrow();
+    }
+
+    /**
      * Retrieves fields whose type is assignable from the given class.
      *
      * @param <R>  the target field type
@@ -67,6 +132,29 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     @SuppressWarnings("unchecked")
     default <R> Collection<IReflectField<R>> getFieldsWithType(Class<R> type) {
         return (Collection<IReflectField<R>>) ((Collection<?>) this.getFieldsByFilter(field -> type.isAssignableFrom(field.getType())));
+    }
+
+    /**
+     * Finds the first field whose type is assignable from the given class.
+     *
+     * @param <R>  the target field type
+     * @param type the {@link Class} object representing the desired field type
+     * @return an Optional containing the first field of the specified type
+     */
+    default <R> Optional<IReflectField<R>> findFirstFieldWithType(Class<R> type) {
+        return this.getFieldsWithType(type).stream().findFirst();
+    }
+
+    /**
+     * Retrieves the first field whose type is assignable from the given class.
+     *
+     * @param <R>  the target field type
+     * @param type the {@link Class} object representing the desired field type
+     * @return the first field of the specified type
+     * @throws java.util.NoSuchElementException if no field matches
+     */
+    default <R> IReflectField<R> getFirstFieldWithType(Class<R> type) {
+        return this.findFirstFieldWithType(type).orElseThrow();
     }
 
     /**
@@ -113,6 +201,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     Collection<IReflectMethod<?>> getMethodsByFilter(Predicate<IReflectMethod<?>> filter);
 
     /**
+     * Finds the first method matching the given predicate.
+     *
+     * @param filter predicate to apply to each method
+     * @return an Optional containing the first {@link IReflectMethod} satisfying the filter
+     */
+    default Optional<IReflectMethod<?>> findFirstMethodByFilter(Predicate<IReflectMethod<?>> filter) {
+        return this.getMethodsByFilter(filter).stream().findFirst();
+    }
+
+    /**
+     * Retrieves the first method matching the given predicate.
+     *
+     * @param filter predicate to apply to each method
+     * @return the first {@link IReflectMethod} satisfying the filter
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default IReflectMethod<?> getFirstMethodByFilter(Predicate<IReflectMethod<?>> filter) {
+        return this.findFirstMethodByFilter(filter).orElseThrow();
+    }
+
+    /**
      * Retrieves all declared methods.
      *
      * @return all methods of the class or instance
@@ -132,6 +241,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     }
 
     /**
+     * Finds the first method with the given name.
+     *
+     * @param name the method name
+     * @return an Optional containing the first method matching the given name
+     */
+    default Optional<IReflectMethod<?>> findFirstMethodWithName(String name) {
+        return this.getMethodsByFilter(method -> method.getName().equals(name)).stream().findFirst();
+    }
+
+    /**
+     * Retrieves the first method with the given name.
+     *
+     * @param name the method name
+     * @return the first method matching the given name
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default IReflectMethod<?> getFirstMethodWithName(String name) {
+        return this.findFirstMethodWithName(name).orElseThrow();
+    }
+
+    /**
      * Retrieves methods matching the specified parameter list.
      *
      * @param params the raw {@link Parameter} array to match
@@ -141,6 +271,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
         return this.getMethodsByFilter((method) -> Arrays.equals(method.getParameters().stream()
                 .map(ReflectParameter::getRaw)
                 .toArray(Parameter[]::new), params));
+    }
+
+    /**
+     * Finds the first method matching the specified parameter list.
+     *
+     * @param params the raw {@link Parameter} array to match
+     * @return an Optional containing the first method with exactly the given parameters
+     */
+    default Optional<IReflectMethod<?>> findFirstMethodWithParameters(Parameter... params) {
+        return this.getMethodsWithParameters(params).stream().findFirst();
+    }
+
+    /**
+     * Retrieves the first method matching the specified parameter list.
+     *
+     * @param params the raw {@link Parameter} array to match
+     * @return the first method with exactly the given parameters
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default IReflectMethod<?> getFirstMethodWithParameters(Parameter... params) {
+        return this.findFirstMethodWithParameters(params).orElseThrow();
     }
 
     /**
@@ -156,6 +307,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     }
 
     /**
+     * Finds the first method matching the specified parameter types.
+     *
+     * @param params the classes of parameter types
+     * @return an Optional containing the first method with exactly the given parameter types
+     */
+    default Optional<IReflectMethod<?>> findFirstMethodWithParameters(Class<?>... params) {
+        return this.getMethodsWithParameters(params).stream().findFirst();
+    }
+
+    /**
+     * Retrieves the first method matching the specified parameter types.
+     *
+     * @param params the classes of parameter types
+     * @return the first method with exactly the given parameter types
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default IReflectMethod<?> getFirstMethodWithParameters(Class<?>... params) {
+        return this.findFirstMethodWithParameters(params).orElseThrow();
+    }
+
+    /**
      * Retrieves methods matching the specified reflective parameter types.
      *
      * @param params the {@link IReflectClass} parameter types
@@ -163,6 +335,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      */
     default Collection<IReflectMethod<?>> getMethodsWithParameters(IReflectClass<?>... params) {
         return this.getMethodsWithParameters(Arrays.stream(params).map(IReflectClass::getType).toArray(Class[]::new));
+    }
+
+    /**
+     * Finds the first method matching the specified reflective parameter types.
+     *
+     * @param params the {@link IReflectClass} parameter types
+     * @return an Optional containing the first method with exactly the given reflective parameter types
+     */
+    default Optional<IReflectMethod<?>> findFirstMethodWithParameters(IReflectClass<?>... params) {
+        return this.getMethodsWithParameters(params).stream().findFirst();
+    }
+
+    /**
+     * Retrieves the first method matching the specified reflective parameter types.
+     *
+     * @param params the {@link IReflectClass} parameter types
+     * @return the first method with exactly the given reflective parameter types
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default IReflectMethod<?> getFirstMethodWithParameters(IReflectClass<?>... params) {
+        return this.findFirstMethodWithParameters(params).orElseThrow();
     }
 
     /**
@@ -175,6 +368,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
         return this.getMethodsByFilter((method) -> Arrays.equals(method.getParameters().stream()
                 .map(ReflectParameter::getName)
                 .toArray(String[]::new), paramNames));
+    }
+
+    /**
+     * Finds the first method matching the specified parameter names.
+     *
+     * @param paramNames names of the parameters
+     * @return an Optional containing the first method with exactly the given parameter names
+     */
+    default Optional<IReflectMethod<?>> findFirstMethodWithParameters(String... paramNames) {
+        return this.getMethodsWithParameters(paramNames).stream().findFirst();
+    }
+
+    /**
+     * Retrieves the first method matching the specified parameter names.
+     *
+     * @param paramNames names of the parameters
+     * @return the first method with exactly the given parameter names
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default IReflectMethod<?> getFirstMethodWithParameters(String... paramNames) {
+        return this.findFirstMethodWithParameters(paramNames).orElseThrow();
     }
 
     /**
@@ -192,6 +406,31 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     }
 
     /**
+     * Finds the first method whose return type exactly matches the specified class.
+     *
+     * @param <R>        the return type
+     * @param returnType the {@link Class} of the return type
+     * @return an Optional containing the first method with the specified return type
+     */
+    @SuppressWarnings("unchecked")
+    default <R> Optional<IReflectMethod<R>> findFirstMethodWithReturnType(Class<R> returnType) {
+        return this.getMethodsByFilter(method -> method.getReturnType().getType().equals(returnType))
+                .stream().findFirst().map(method -> (IReflectMethod<R>) method);
+    }
+
+    /**
+     * Retrieves the first method whose return type exactly matches the specified class.
+     *
+     * @param <R>        the return type
+     * @param returnType the {@link Class} of the return type
+     * @return the first method with the specified return type
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default <R> IReflectMethod<R> getFirstMethodWithReturnType(Class<R> returnType) {
+        return this.<R>findFirstMethodWithReturnType(returnType).orElseThrow();
+    }
+
+    /**
      * Retrieves methods whose return type exactly matches the specified reflective class.
      *
      * @param <R>        the return type
@@ -200,6 +439,29 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      */
     default <R> Collection<IReflectMethod<R>> getMethodsWithReturnType(IReflectClass<R> returnType) {
         return this.getMethodsWithReturnType(returnType.getType());
+    }
+
+    /**
+     * Finds the first method whose return type exactly matches the specified reflective class.
+     *
+     * @param <R>        the return type
+     * @param returnType the {@link IReflectClass} of the return type
+     * @return an Optional containing the first method with the specified return type
+     */
+    default <R> Optional<IReflectMethod<R>> findFirstMethodWithReturnType(IReflectClass<R> returnType) {
+        return this.findFirstMethodWithReturnType(returnType.getType());
+    }
+
+    /**
+     * Retrieves the first method whose return type exactly matches the specified reflective class.
+     *
+     * @param <R>        the return type
+     * @param returnType the {@link IReflectClass} of the return type
+     * @return the first method with the specified return type
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default <R> IReflectMethod<R> getFirstMethodWithReturnType(IReflectClass<R> returnType) {
+        return this.findFirstMethodWithReturnType(returnType).orElseThrow();
     }
 
     /**
@@ -303,12 +565,54 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     }
 
     /**
+     * Finds the first method annotated with the specified annotation.
+     *
+     * @param annotation the annotation type
+     * @return an Optional containing the first method bearing the given annotation
+     */
+    default Optional<IReflectMethod<?>> findFirstMethodWithAnnotation(Class<? extends Annotation> annotation) {
+        return this.getMethodsByFilter(method -> method.isAnnotationPresent(annotation)).stream().findFirst();
+    }
+
+    /**
+     * Retrieves the first method annotated with the specified annotation.
+     *
+     * @param annotation the annotation type
+     * @return the first method bearing the given annotation
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default IReflectMethod<?> getFirstMethodWithAnnotation(Class<? extends Annotation> annotation) {
+        return this.findFirstMethodWithAnnotation(annotation).orElseThrow();
+    }
+
+    /**
      * Retrieves constructors matching the given predicate.
      *
      * @param filter predicate to apply to each constructor
      * @return a collection of {@link IReflectConstructor} satisfying the filter
      */
     Collection<IReflectConstructor<T>> getConstructorsByFilter(Predicate<IReflectConstructor<T>> filter);
+
+    /**
+     * Finds the first constructor matching the given predicate.
+     *
+     * @param filter predicate to apply to each constructor
+     * @return an Optional containing the first {@link IReflectConstructor} satisfying the filter
+     */
+    default Optional<IReflectConstructor<T>> findFirstConstructorByFilter(Predicate<IReflectConstructor<T>> filter) {
+        return this.getConstructorsByFilter(filter).stream().findFirst();
+    }
+
+    /**
+     * Retrieves the first constructor matching the given predicate.
+     *
+     * @param filter predicate to apply to each constructor
+     * @return the first {@link IReflectConstructor} satisfying the filter
+     * @throws java.util.NoSuchElementException if no constructor matches
+     */
+    default IReflectConstructor<T> getFirstConstructorByFilter(Predicate<IReflectConstructor<T>> filter) {
+        return this.findFirstConstructorByFilter(filter).orElseThrow();
+    }
 
     /**
      * Retrieves all declared constructors.
@@ -438,6 +742,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      */
     default Collection<IReflectConstructor<T>> getConstructorsWithAnnotation(Class<? extends Annotation> annotation) {
         return this.getConstructorsByFilter(c -> c.isAnnotationPresent(annotation));
+    }
+
+    /**
+     * Finds the first constructor annotated with the specified annotation.
+     *
+     * @param annotation the annotation type
+     * @return an Optional containing the first {@link IReflectConstructor} bearing the given annotation
+     */
+    default Optional<IReflectConstructor<T>> findFirstConstructorWithAnnotation(Class<? extends Annotation> annotation) {
+        return this.getConstructorsByFilter(c -> c.isAnnotationPresent(annotation)).stream().findFirst();
+    }
+
+    /**
+     * Retrieves the first constructor annotated with the specified annotation.
+     *
+     * @param annotation the annotation type
+     * @return the first {@link IReflectConstructor} bearing the given annotation
+     * @throws java.util.NoSuchElementException if no constructor matches
+     */
+    default IReflectConstructor<T> getFirstConstructorWithAnnotation(Class<? extends Annotation> annotation) {
+        return this.findFirstConstructorWithAnnotation(annotation).orElseThrow();
     }
 
     /**
