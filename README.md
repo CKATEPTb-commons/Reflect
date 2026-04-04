@@ -89,22 +89,29 @@ public class Person {
 
 ```java
 public void example() {
-    // 1. Get all declared constructors
+    // Get all declared constructors
     Reflect.on(Person.class)
         .getConstructors();
 
-    // 2. Find constructor by parameter types
+    // find* returns Optional — use when the constructor may not exist
     Reflect.on(Person.class)
-        .getConstructorWithParameters(String.class, int.class)
+        .findConstructorWithParameters(String.class, int.class)
         .ifPresent(ctor -> /* use ctor */);
 
-    // 3. Filter constructors (e.g., two-arg only)
+    // get* throws NoSuchElementException — use when you are certain it exists
     Reflect.on(Person.class)
-        .getConstructorsByFilter(c -> c.getParameters().size() == 2);
+        .getConstructorWithParameters(String.class, int.class);
 
-    // 4. Default (no-arg) constructor
+    // Default (no-arg) constructor
     Reflect.on(Person.class)
-        .getDefaultConstructor();
+        .findDefaultConstructor()
+        .ifPresent(ctor -> /* use ctor */);
+
+    // Filter constructors; findFirst*/findLast* return Optional, getFirst*/getLast* throw
+    Reflect.on(Person.class)
+        .findFirstConstructorByFilter(c -> c.getParameters().size() == 2);
+    Reflect.on(Person.class)
+        .getLastConstructorWithAnnotation(Deprecated.class);
 }
 ```
 
@@ -115,7 +122,6 @@ public void example() {
     // Create a new Person using the (String, int) constructor
     Person p = Reflect.on(Person.class)
         .getConstructorWithParameters(String.class, int.class)
-        .orElseThrow()
         .invoke("Reflect", 3)   // returns IReflectClass<Person>
         .getValue();            // unwrap to Person
 }
@@ -141,22 +147,28 @@ public void example() {
     // List all fields
     Reflect.on(existing)
             .getFields();
-    
+
     // String-typed fields only
-    Reflect
-        .on(Person.class)
+    Reflect.on(Person.class)
         .getFieldsWithType(String.class);
 
     // Fields annotated with @Nullable
-    Reflect
-        .on(Person.class)
+    Reflect.on(Person.class)
         .getFieldsWithAnnotation(Nullable.class);
 
-    // Field lookup by name
-    Reflect
-        .on(Person.class)
-        .getFieldWithName("name")
+    // find* returns Optional, get* throws — same pattern throughout the API
+    Reflect.on(Person.class)
+        .findFieldWithName("name")
         .ifPresent(field -> /* use field */);
+
+    Reflect.on(Person.class)
+        .getFieldWithName("name"); // throws if absent
+
+    // findFirst*/findLast* for the first or last match in a collection
+    Reflect.on(Person.class)
+        .findFirstFieldWithType(String.class);
+    Reflect.on(Person.class)
+        .findLastFieldWithAnnotation(Nullable.class);
 }
 ```
 
@@ -167,7 +179,6 @@ public void example() {
     // Update an instance field value
     Reflect.on(existing)
         .getFieldWithName("name")
-        .orElseThrow()
         .setValue("Bob")                     // set field to "Bob"
         .updateValue(old -> old + " Smith") // append suffix
         .getValue();                          // read back: "Bob Smith"
@@ -182,25 +193,27 @@ public void example() {
     Reflect.on(Person.class)
         .getMethods();
 
-    // Find by name
-    Reflect
-        .on(Person.class)
+    // Methods by name, return type, or parameters — return a collection
+    Reflect.on(Person.class)
         .getMethodsWithName("greet");
-
-    // Methods returning String
-    Reflect
-        .on(Person.class)
+    Reflect.on(Person.class)
         .getMethodsWithReturnType(String.class);
-
-    // Methods taking a single String parameter
-    Reflect
-        .on(Person.class)
+    Reflect.on(Person.class)
         .getMethodsWithParameters(String.class);
 
-    // Lookup by parameter name
-    Reflect
-        .on(Person.class)
-        .getMethodsWithParameters("other");
+    // find* returns Optional, get* throws
+    Reflect.on(Person.class)
+        .findMethodWithNameAndParameters("greet", String.class)
+        .ifPresent(m -> /* use m */);
+
+    Reflect.on(Person.class)
+        .getMethodWithNameAndParameters("greet", String.class); // throws if absent
+
+    // findFirst*/findLast* for the first or last match in a collection
+    Reflect.on(Person.class)
+        .findFirstMethodWithReturnType(String.class);
+    Reflect.on(Person.class)
+        .getLastMethodByFilter(m -> m.getParameters().size() == 1);
 }
 ```
 
@@ -210,7 +223,6 @@ Invocation Example
 public void example() {
     String msg = Reflect.on(existing)
             .getMethodWithNameAndParameters("greet", String.class)
-            .orElseThrow()
             .invoke("World")         // returns IReflectClass<String>
             .<String>cast()          // cast reflector to String type
             .getValue();             // unwrap: "Hello, World! I'm Alice"
@@ -229,7 +241,7 @@ public void example() {
 
     // Map and flatMap for functional flows
     int age = Reflect.on(existing)
-            .map(rc -> rc.getFieldWithName("age").orElseThrow().getValue())
+            .map(rc -> rc.getFieldWithName("age").getValue())
             .peek(a -> System.out.println("Age before: " + a))
             .flatMap(a -> Reflect.on(a + 5))
             .getValue();  // computes new age value

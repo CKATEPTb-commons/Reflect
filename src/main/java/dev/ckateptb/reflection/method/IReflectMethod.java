@@ -5,6 +5,7 @@ import dev.ckateptb.reflection.type.IReflectClass;
 
 import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -61,6 +62,48 @@ public interface IReflectMethod<T> extends IReflectClass<T> {
      * @return a collection of {@link ReflectParameter} instances satisfying the filter
      */
     Collection<ReflectParameter<?>> getParameters(Predicate<ReflectParameter<?>> filter);
+
+    /**
+     * Finds the first parameter matching the given filter.
+     *
+     * @param filter predicate to apply to each parameter
+     * @return an Optional containing the first {@link ReflectParameter} satisfying the filter
+     */
+    default Optional<ReflectParameter<?>> findFirstParameter(Predicate<ReflectParameter<?>> filter) {
+        return this.getParameters(filter).stream().findFirst();
+    }
+
+    /**
+     * Retrieves the first parameter matching the given filter.
+     *
+     * @param filter predicate to apply to each parameter
+     * @return the first {@link ReflectParameter} satisfying the filter
+     * @throws java.util.NoSuchElementException if no parameter matches
+     */
+    default ReflectParameter<?> getFirstParameter(Predicate<ReflectParameter<?>> filter) {
+        return this.findFirstParameter(filter).orElseThrow();
+    }
+
+    /**
+     * Finds the last parameter matching the given filter.
+     *
+     * @param filter predicate to apply to each parameter
+     * @return an Optional containing the last {@link ReflectParameter} satisfying the filter
+     */
+    default Optional<ReflectParameter<?>> findLastParameter(Predicate<ReflectParameter<?>> filter) {
+        return this.getParameters(filter).stream().reduce((a, b) -> b);
+    }
+
+    /**
+     * Retrieves the last parameter matching the given filter.
+     *
+     * @param filter predicate to apply to each parameter
+     * @return the last {@link ReflectParameter} satisfying the filter
+     * @throws java.util.NoSuchElementException if no parameter matches
+     */
+    default ReflectParameter<?> getLastParameter(Predicate<ReflectParameter<?>> filter) {
+        return this.findLastParameter(filter).orElseThrow();
+    }
 
     /**
      * {@inheritDoc}

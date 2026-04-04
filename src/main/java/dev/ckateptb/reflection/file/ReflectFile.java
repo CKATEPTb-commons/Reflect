@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -80,6 +81,48 @@ public class ReflectFile extends FlagTracker {
      * @param pkg The package name to filter by.
      * @return A collection of classes in the specified package.
      */
+    /**
+     * Finds the first class matching the given filter.
+     *
+     * @param filter The predicate to apply for filtering classes.
+     * @return An Optional containing the first class that matches the filter.
+     */
+    public Optional<IReflectClass<?>> findFirstClassByFilter(Predicate<IReflectClass<?>> filter) {
+        return this.getClassesByFilter(filter).stream().findFirst();
+    }
+
+    /**
+     * Retrieves the first class matching the given filter.
+     *
+     * @param filter The predicate to apply for filtering classes.
+     * @return The first class that matches the filter.
+     * @throws java.util.NoSuchElementException if no class matches
+     */
+    public IReflectClass<?> getFirstClassByFilter(Predicate<IReflectClass<?>> filter) {
+        return this.findFirstClassByFilter(filter).orElseThrow();
+    }
+
+    /**
+     * Finds the last class matching the given filter.
+     *
+     * @param filter The predicate to apply for filtering classes.
+     * @return An Optional containing the last class that matches the filter.
+     */
+    public Optional<IReflectClass<?>> findLastClassByFilter(Predicate<IReflectClass<?>> filter) {
+        return this.getClassesByFilter(filter).stream().reduce((a, b) -> b);
+    }
+
+    /**
+     * Retrieves the last class matching the given filter.
+     *
+     * @param filter The predicate to apply for filtering classes.
+     * @return The last class that matches the filter.
+     * @throws java.util.NoSuchElementException if no class matches
+     */
+    public IReflectClass<?> getLastClassByFilter(Predicate<IReflectClass<?>> filter) {
+        return this.findLastClassByFilter(filter).orElseThrow();
+    }
+
     public Collection<IReflectClass<?>> getClassesInPackage(String pkg) {
         return this.getClassesInPackage(pkg, true);
     }
@@ -97,6 +140,102 @@ public class ReflectFile extends FlagTracker {
             clazzPackage = clazzPackage.isEmpty() ? clazzPackage : clazzPackage + ".";
             return recursive ? clazzPackage.startsWith(pkg) : clazzPackage.equals(pkg);
         });
+    }
+
+    /**
+     * Finds the first class within a specific package (recursive by default).
+     *
+     * @param pkg The package name to filter by.
+     * @return An Optional containing the first class in the specified package.
+     */
+    public Optional<IReflectClass<?>> findFirstClassInPackage(String pkg) {
+        return this.findFirstClassInPackage(pkg, true);
+    }
+
+    /**
+     * Retrieves the first class within a specific package (recursive by default).
+     *
+     * @param pkg The package name to filter by.
+     * @return The first class in the specified package.
+     * @throws java.util.NoSuchElementException if no class matches
+     */
+    public IReflectClass<?> getFirstClassInPackage(String pkg) {
+        return this.findFirstClassInPackage(pkg).orElseThrow();
+    }
+
+    /**
+     * Finds the last class within a specific package (recursive by default).
+     *
+     * @param pkg The package name to filter by.
+     * @return An Optional containing the last class in the specified package.
+     */
+    public Optional<IReflectClass<?>> findLastClassInPackage(String pkg) {
+        return this.findLastClassInPackage(pkg, true);
+    }
+
+    /**
+     * Retrieves the last class within a specific package (recursive by default).
+     *
+     * @param pkg The package name to filter by.
+     * @return The last class in the specified package.
+     * @throws java.util.NoSuchElementException if no class matches
+     */
+    public IReflectClass<?> getLastClassInPackage(String pkg) {
+        return this.findLastClassInPackage(pkg).orElseThrow();
+    }
+
+    /**
+     * Finds the first class within a specific package, optionally recursively.
+     *
+     * @param pkg       The package name to filter by.
+     * @param recursive Whether to include sub-packages.
+     * @return An Optional containing the first class in the specified package.
+     */
+    public Optional<IReflectClass<?>> findFirstClassInPackage(String pkg, boolean recursive) {
+        return this.findFirstClassByFilter(clazz -> {
+            String clazzPackage = clazz.getPackage();
+            clazzPackage = clazzPackage.isEmpty() ? clazzPackage : clazzPackage + ".";
+            return recursive ? clazzPackage.startsWith(pkg) : clazzPackage.equals(pkg);
+        });
+    }
+
+    /**
+     * Retrieves the first class within a specific package, optionally recursively.
+     *
+     * @param pkg       The package name to filter by.
+     * @param recursive Whether to include sub-packages.
+     * @return The first class in the specified package.
+     * @throws java.util.NoSuchElementException if no class matches
+     */
+    public IReflectClass<?> getFirstClassInPackage(String pkg, boolean recursive) {
+        return this.findFirstClassInPackage(pkg, recursive).orElseThrow();
+    }
+
+    /**
+     * Finds the last class within a specific package, optionally recursively.
+     *
+     * @param pkg       The package name to filter by.
+     * @param recursive Whether to include sub-packages.
+     * @return An Optional containing the last class in the specified package.
+     */
+    public Optional<IReflectClass<?>> findLastClassInPackage(String pkg, boolean recursive) {
+        return this.findLastClassByFilter(clazz -> {
+            String clazzPackage = clazz.getPackage();
+            clazzPackage = clazzPackage.isEmpty() ? clazzPackage : clazzPackage + ".";
+            return recursive ? clazzPackage.startsWith(pkg) : clazzPackage.equals(pkg);
+        });
+    }
+
+    /**
+     * Retrieves the last class within a specific package, optionally recursively.
+     *
+     * @param pkg       The package name to filter by.
+     * @param recursive Whether to include sub-packages.
+     * @return The last class in the specified package.
+     * @throws java.util.NoSuchElementException if no class matches
+     */
+    public IReflectClass<?> getLastClassInPackage(String pkg, boolean recursive) {
+        return this.findLastClassInPackage(pkg, recursive).orElseThrow();
     }
 
     /**
@@ -145,6 +284,48 @@ public class ReflectFile extends FlagTracker {
     }
 
     /**
+     * Finds the first class annotated with a specific annotation.
+     *
+     * @param annotation The annotation class to filter by.
+     * @return An Optional containing the first class annotated with the specified annotation.
+     */
+    public Optional<IReflectClass<?>> findFirstClassWithAnnotation(Class<? extends Annotation> annotation) {
+        return this.findFirstClassByFilter(clazz -> clazz.isAnnotationPresent(annotation));
+    }
+
+    /**
+     * Retrieves the first class annotated with a specific annotation.
+     *
+     * @param annotation The annotation class to filter by.
+     * @return The first class annotated with the specified annotation.
+     * @throws java.util.NoSuchElementException if no class matches
+     */
+    public IReflectClass<?> getFirstClassWithAnnotation(Class<? extends Annotation> annotation) {
+        return this.findFirstClassWithAnnotation(annotation).orElseThrow();
+    }
+
+    /**
+     * Finds the last class annotated with a specific annotation.
+     *
+     * @param annotation The annotation class to filter by.
+     * @return An Optional containing the last class annotated with the specified annotation.
+     */
+    public Optional<IReflectClass<?>> findLastClassWithAnnotation(Class<? extends Annotation> annotation) {
+        return this.findLastClassByFilter(clazz -> clazz.isAnnotationPresent(annotation));
+    }
+
+    /**
+     * Retrieves the last class annotated with a specific annotation.
+     *
+     * @param annotation The annotation class to filter by.
+     * @return The last class annotated with the specified annotation.
+     * @throws java.util.NoSuchElementException if no class matches
+     */
+    public IReflectClass<?> getLastClassWithAnnotation(Class<? extends Annotation> annotation) {
+        return this.findLastClassWithAnnotation(annotation).orElseThrow();
+    }
+
+    /**
      * Retrieves classes that are instances of a specific superclass or interface.
      *
      * @param superClass The superclass or interface to filter by.
@@ -152,5 +333,47 @@ public class ReflectFile extends FlagTracker {
      */
     public Collection<IReflectClass<?>> getClassesByInstanceOf(Class<?> superClass) {
         return this.getClassesByFilter(clazz -> clazz.isInstanceOf(superClass));
+    }
+
+    /**
+     * Finds the first class that is an instance of a specific superclass or interface.
+     *
+     * @param superClass The superclass or interface to filter by.
+     * @return An Optional containing the first class that is an instance of the specified superclass or interface.
+     */
+    public Optional<IReflectClass<?>> findFirstClassByInstanceOf(Class<?> superClass) {
+        return this.findFirstClassByFilter(clazz -> clazz.isInstanceOf(superClass));
+    }
+
+    /**
+     * Retrieves the first class that is an instance of a specific superclass or interface.
+     *
+     * @param superClass The superclass or interface to filter by.
+     * @return The first class that is an instance of the specified superclass or interface.
+     * @throws java.util.NoSuchElementException if no class matches
+     */
+    public IReflectClass<?> getFirstClassByInstanceOf(Class<?> superClass) {
+        return this.findFirstClassByInstanceOf(superClass).orElseThrow();
+    }
+
+    /**
+     * Finds the last class that is an instance of a specific superclass or interface.
+     *
+     * @param superClass The superclass or interface to filter by.
+     * @return An Optional containing the last class that is an instance of the specified superclass or interface.
+     */
+    public Optional<IReflectClass<?>> findLastClassByInstanceOf(Class<?> superClass) {
+        return this.findLastClassByFilter(clazz -> clazz.isInstanceOf(superClass));
+    }
+
+    /**
+     * Retrieves the last class that is an instance of a specific superclass or interface.
+     *
+     * @param superClass The superclass or interface to filter by.
+     * @return The last class that is an instance of the specified superclass or interface.
+     * @throws java.util.NoSuchElementException if no class matches
+     */
+    public IReflectClass<?> getLastClassByInstanceOf(Class<?> superClass) {
+        return this.findLastClassByInstanceOf(superClass).orElseThrow();
     }
 }
