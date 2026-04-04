@@ -85,6 +85,27 @@ public interface IReflectMethod<T> extends IReflectClass<T> {
     }
 
     /**
+     * Finds the last parameter matching the given filter.
+     *
+     * @param filter predicate to apply to each parameter
+     * @return an Optional containing the last {@link ReflectParameter} satisfying the filter
+     */
+    default Optional<ReflectParameter<?>> findLastParameter(Predicate<ReflectParameter<?>> filter) {
+        return this.getParameters(filter).stream().reduce((a, b) -> b);
+    }
+
+    /**
+     * Retrieves the last parameter matching the given filter.
+     *
+     * @param filter predicate to apply to each parameter
+     * @return the last {@link ReflectParameter} satisfying the filter
+     * @throws java.util.NoSuchElementException if no parameter matches
+     */
+    default ReflectParameter<?> getLastParameter(Predicate<ReflectParameter<?>> filter) {
+        return this.findLastParameter(filter).orElseThrow();
+    }
+
+    /**
      * {@inheritDoc}
      * <p>
      * Not supported for methods; always deprecated.

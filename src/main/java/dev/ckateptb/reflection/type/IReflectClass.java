@@ -58,6 +58,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     }
 
     /**
+     * Finds the last field matching the given predicate.
+     *
+     * @param filter predicate to apply to each field
+     * @return an Optional containing the last {@link IReflectField} satisfying the filter
+     */
+    default Optional<IReflectField<?>> findLastFieldByFilter(Predicate<IReflectField<?>> filter) {
+        return this.getFieldsByFilter(filter).stream().reduce((a, b) -> b);
+    }
+
+    /**
+     * Retrieves the last field matching the given predicate.
+     *
+     * @param filter predicate to apply to each field
+     * @return the last {@link IReflectField} satisfying the filter
+     * @throws java.util.NoSuchElementException if no field matches
+     */
+    default IReflectField<?> getLastFieldByFilter(Predicate<IReflectField<?>> filter) {
+        return this.findLastFieldByFilter(filter).orElseThrow();
+    }
+
+    /**
      * Retrieves fields annotated with the specified annotation type.
      *
      * @param annotation the annotation to look for
@@ -86,6 +107,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      */
     default IReflectField<?> getFirstFieldWithAnnotation(Class<? extends Annotation> annotation) {
         return this.findFirstFieldWithAnnotation(annotation).orElseThrow();
+    }
+
+    /**
+     * Finds the last field annotated with the specified annotation type.
+     *
+     * @param annotation the annotation to look for
+     * @return an Optional containing the last field bearing the given annotation
+     */
+    default Optional<IReflectField<?>> findLastFieldWithAnnotation(Class<? extends Annotation> annotation) {
+        return this.getFieldsByFilter(field -> field.isAnnotationPresent(annotation)).stream().reduce((a, b) -> b);
+    }
+
+    /**
+     * Retrieves the last field annotated with the specified annotation type.
+     *
+     * @param annotation the annotation to look for
+     * @return the last field bearing the given annotation
+     * @throws java.util.NoSuchElementException if no field matches
+     */
+    default IReflectField<?> getLastFieldWithAnnotation(Class<? extends Annotation> annotation) {
+        return this.findLastFieldWithAnnotation(annotation).orElseThrow();
     }
 
     /**
@@ -123,6 +165,29 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     }
 
     /**
+     * Finds the last field whose type is assignable from the given reflective class.
+     *
+     * @param <R>  the target field type
+     * @param type the {@link IReflectClass} representing the desired field type
+     * @return an Optional containing the last field of the specified type
+     */
+    default <R> Optional<IReflectField<R>> findLastFieldWithType(IReflectClass<R> type) {
+        return this.getFieldsWithType(type).stream().reduce((a, b) -> b);
+    }
+
+    /**
+     * Retrieves the last field whose type is assignable from the given reflective class.
+     *
+     * @param <R>  the target field type
+     * @param type the {@link IReflectClass} representing the desired field type
+     * @return the last field of the specified type
+     * @throws java.util.NoSuchElementException if no field matches
+     */
+    default <R> IReflectField<R> getLastFieldWithType(IReflectClass<R> type) {
+        return this.findLastFieldWithType(type).orElseThrow();
+    }
+
+    /**
      * Retrieves fields whose type is assignable from the given class.
      *
      * @param <R>  the target field type
@@ -155,6 +220,29 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      */
     default <R> IReflectField<R> getFirstFieldWithType(Class<R> type) {
         return this.findFirstFieldWithType(type).orElseThrow();
+    }
+
+    /**
+     * Finds the last field whose type is assignable from the given class.
+     *
+     * @param <R>  the target field type
+     * @param type the {@link Class} object representing the desired field type
+     * @return an Optional containing the last field of the specified type
+     */
+    default <R> Optional<IReflectField<R>> findLastFieldWithType(Class<R> type) {
+        return this.getFieldsWithType(type).stream().reduce((a, b) -> b);
+    }
+
+    /**
+     * Retrieves the last field whose type is assignable from the given class.
+     *
+     * @param <R>  the target field type
+     * @param type the {@link Class} object representing the desired field type
+     * @return the last field of the specified type
+     * @throws java.util.NoSuchElementException if no field matches
+     */
+    default <R> IReflectField<R> getLastFieldWithType(Class<R> type) {
+        return this.findLastFieldWithType(type).orElseThrow();
     }
 
     /**
@@ -222,6 +310,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     }
 
     /**
+     * Finds the last method matching the given predicate.
+     *
+     * @param filter predicate to apply to each method
+     * @return an Optional containing the last {@link IReflectMethod} satisfying the filter
+     */
+    default Optional<IReflectMethod<?>> findLastMethodByFilter(Predicate<IReflectMethod<?>> filter) {
+        return this.getMethodsByFilter(filter).stream().reduce((a, b) -> b);
+    }
+
+    /**
+     * Retrieves the last method matching the given predicate.
+     *
+     * @param filter predicate to apply to each method
+     * @return the last {@link IReflectMethod} satisfying the filter
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default IReflectMethod<?> getLastMethodByFilter(Predicate<IReflectMethod<?>> filter) {
+        return this.findLastMethodByFilter(filter).orElseThrow();
+    }
+
+    /**
      * Retrieves all declared methods.
      *
      * @return all methods of the class or instance
@@ -262,6 +371,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     }
 
     /**
+     * Finds the last method with the given name.
+     *
+     * @param name the method name
+     * @return an Optional containing the last method matching the given name
+     */
+    default Optional<IReflectMethod<?>> findLastMethodWithName(String name) {
+        return this.getMethodsByFilter(method -> method.getName().equals(name)).stream().reduce((a, b) -> b);
+    }
+
+    /**
+     * Retrieves the last method with the given name.
+     *
+     * @param name the method name
+     * @return the last method matching the given name
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default IReflectMethod<?> getLastMethodWithName(String name) {
+        return this.findLastMethodWithName(name).orElseThrow();
+    }
+
+    /**
      * Retrieves methods matching the specified parameter list.
      *
      * @param params the raw {@link Parameter} array to match
@@ -292,6 +422,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      */
     default IReflectMethod<?> getFirstMethodWithParameters(Parameter... params) {
         return this.findFirstMethodWithParameters(params).orElseThrow();
+    }
+
+    /**
+     * Finds the last method matching the specified parameter list.
+     *
+     * @param params the raw {@link Parameter} array to match
+     * @return an Optional containing the last method with exactly the given parameters
+     */
+    default Optional<IReflectMethod<?>> findLastMethodWithParameters(Parameter... params) {
+        return this.getMethodsWithParameters(params).stream().reduce((a, b) -> b);
+    }
+
+    /**
+     * Retrieves the last method matching the specified parameter list.
+     *
+     * @param params the raw {@link Parameter} array to match
+     * @return the last method with exactly the given parameters
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default IReflectMethod<?> getLastMethodWithParameters(Parameter... params) {
+        return this.findLastMethodWithParameters(params).orElseThrow();
     }
 
     /**
@@ -328,6 +479,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     }
 
     /**
+     * Finds the last method matching the specified parameter types.
+     *
+     * @param params the classes of parameter types
+     * @return an Optional containing the last method with exactly the given parameter types
+     */
+    default Optional<IReflectMethod<?>> findLastMethodWithParameters(Class<?>... params) {
+        return this.getMethodsWithParameters(params).stream().reduce((a, b) -> b);
+    }
+
+    /**
+     * Retrieves the last method matching the specified parameter types.
+     *
+     * @param params the classes of parameter types
+     * @return the last method with exactly the given parameter types
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default IReflectMethod<?> getLastMethodWithParameters(Class<?>... params) {
+        return this.findLastMethodWithParameters(params).orElseThrow();
+    }
+
+    /**
      * Retrieves methods matching the specified reflective parameter types.
      *
      * @param params the {@link IReflectClass} parameter types
@@ -356,6 +528,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      */
     default IReflectMethod<?> getFirstMethodWithParameters(IReflectClass<?>... params) {
         return this.findFirstMethodWithParameters(params).orElseThrow();
+    }
+
+    /**
+     * Finds the last method matching the specified reflective parameter types.
+     *
+     * @param params the {@link IReflectClass} parameter types
+     * @return an Optional containing the last method with exactly the given reflective parameter types
+     */
+    default Optional<IReflectMethod<?>> findLastMethodWithParameters(IReflectClass<?>... params) {
+        return this.getMethodsWithParameters(params).stream().reduce((a, b) -> b);
+    }
+
+    /**
+     * Retrieves the last method matching the specified reflective parameter types.
+     *
+     * @param params the {@link IReflectClass} parameter types
+     * @return the last method with exactly the given reflective parameter types
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default IReflectMethod<?> getLastMethodWithParameters(IReflectClass<?>... params) {
+        return this.findLastMethodWithParameters(params).orElseThrow();
     }
 
     /**
@@ -389,6 +582,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      */
     default IReflectMethod<?> getFirstMethodWithParameters(String... paramNames) {
         return this.findFirstMethodWithParameters(paramNames).orElseThrow();
+    }
+
+    /**
+     * Finds the last method matching the specified parameter names.
+     *
+     * @param paramNames names of the parameters
+     * @return an Optional containing the last method with exactly the given parameter names
+     */
+    default Optional<IReflectMethod<?>> findLastMethodWithParameters(String... paramNames) {
+        return this.getMethodsWithParameters(paramNames).stream().reduce((a, b) -> b);
+    }
+
+    /**
+     * Retrieves the last method matching the specified parameter names.
+     *
+     * @param paramNames names of the parameters
+     * @return the last method with exactly the given parameter names
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default IReflectMethod<?> getLastMethodWithParameters(String... paramNames) {
+        return this.findLastMethodWithParameters(paramNames).orElseThrow();
     }
 
     /**
@@ -431,6 +645,31 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     }
 
     /**
+     * Finds the last method whose return type exactly matches the specified class.
+     *
+     * @param <R>        the return type
+     * @param returnType the {@link Class} of the return type
+     * @return an Optional containing the last method with the specified return type
+     */
+    @SuppressWarnings("unchecked")
+    default <R> Optional<IReflectMethod<R>> findLastMethodWithReturnType(Class<R> returnType) {
+        return this.getMethodsByFilter(method -> method.getReturnType().getType().equals(returnType))
+                .stream().reduce((a, b) -> b).map(method -> (IReflectMethod<R>) method);
+    }
+
+    /**
+     * Retrieves the last method whose return type exactly matches the specified class.
+     *
+     * @param <R>        the return type
+     * @param returnType the {@link Class} of the return type
+     * @return the last method with the specified return type
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default <R> IReflectMethod<R> getLastMethodWithReturnType(Class<R> returnType) {
+        return this.<R>findLastMethodWithReturnType(returnType).orElseThrow();
+    }
+
+    /**
      * Retrieves methods whose return type exactly matches the specified reflective class.
      *
      * @param <R>        the return type
@@ -462,6 +701,29 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      */
     default <R> IReflectMethod<R> getFirstMethodWithReturnType(IReflectClass<R> returnType) {
         return this.findFirstMethodWithReturnType(returnType).orElseThrow();
+    }
+
+    /**
+     * Finds the last method whose return type exactly matches the specified reflective class.
+     *
+     * @param <R>        the return type
+     * @param returnType the {@link IReflectClass} of the return type
+     * @return an Optional containing the last method with the specified return type
+     */
+    default <R> Optional<IReflectMethod<R>> findLastMethodWithReturnType(IReflectClass<R> returnType) {
+        return this.findLastMethodWithReturnType(returnType.getType());
+    }
+
+    /**
+     * Retrieves the last method whose return type exactly matches the specified reflective class.
+     *
+     * @param <R>        the return type
+     * @param returnType the {@link IReflectClass} of the return type
+     * @return the last method with the specified return type
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default <R> IReflectMethod<R> getLastMethodWithReturnType(IReflectClass<R> returnType) {
+        return this.findLastMethodWithReturnType(returnType).orElseThrow();
     }
 
     /**
@@ -586,6 +848,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     }
 
     /**
+     * Finds the last method annotated with the specified annotation.
+     *
+     * @param annotation the annotation type
+     * @return an Optional containing the last method bearing the given annotation
+     */
+    default Optional<IReflectMethod<?>> findLastMethodWithAnnotation(Class<? extends Annotation> annotation) {
+        return this.getMethodsByFilter(method -> method.isAnnotationPresent(annotation)).stream().reduce((a, b) -> b);
+    }
+
+    /**
+     * Retrieves the last method annotated with the specified annotation.
+     *
+     * @param annotation the annotation type
+     * @return the last method bearing the given annotation
+     * @throws java.util.NoSuchElementException if no method matches
+     */
+    default IReflectMethod<?> getLastMethodWithAnnotation(Class<? extends Annotation> annotation) {
+        return this.findLastMethodWithAnnotation(annotation).orElseThrow();
+    }
+
+    /**
      * Retrieves constructors matching the given predicate.
      *
      * @param filter predicate to apply to each constructor
@@ -612,6 +895,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      */
     default IReflectConstructor<T> getFirstConstructorByFilter(Predicate<IReflectConstructor<T>> filter) {
         return this.findFirstConstructorByFilter(filter).orElseThrow();
+    }
+
+    /**
+     * Finds the last constructor matching the given predicate.
+     *
+     * @param filter predicate to apply to each constructor
+     * @return an Optional containing the last {@link IReflectConstructor} satisfying the filter
+     */
+    default Optional<IReflectConstructor<T>> findLastConstructorByFilter(Predicate<IReflectConstructor<T>> filter) {
+        return this.getConstructorsByFilter(filter).stream().reduce((a, b) -> b);
+    }
+
+    /**
+     * Retrieves the last constructor matching the given predicate.
+     *
+     * @param filter predicate to apply to each constructor
+     * @return the last {@link IReflectConstructor} satisfying the filter
+     * @throws java.util.NoSuchElementException if no constructor matches
+     */
+    default IReflectConstructor<T> getLastConstructorByFilter(Predicate<IReflectConstructor<T>> filter) {
+        return this.findLastConstructorByFilter(filter).orElseThrow();
     }
 
     /**
@@ -763,6 +1067,27 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      */
     default IReflectConstructor<T> getFirstConstructorWithAnnotation(Class<? extends Annotation> annotation) {
         return this.findFirstConstructorWithAnnotation(annotation).orElseThrow();
+    }
+
+    /**
+     * Finds the last constructor annotated with the specified annotation.
+     *
+     * @param annotation the annotation type
+     * @return an Optional containing the last {@link IReflectConstructor} bearing the given annotation
+     */
+    default Optional<IReflectConstructor<T>> findLastConstructorWithAnnotation(Class<? extends Annotation> annotation) {
+        return this.getConstructorsByFilter(c -> c.isAnnotationPresent(annotation)).stream().reduce((a, b) -> b);
+    }
+
+    /**
+     * Retrieves the last constructor annotated with the specified annotation.
+     *
+     * @param annotation the annotation type
+     * @return the last {@link IReflectConstructor} bearing the given annotation
+     * @throws java.util.NoSuchElementException if no constructor matches
+     */
+    default IReflectConstructor<T> getLastConstructorWithAnnotation(Class<? extends Annotation> annotation) {
+        return this.findLastConstructorWithAnnotation(annotation).orElseThrow();
     }
 
     /**
