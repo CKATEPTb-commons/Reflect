@@ -86,9 +86,22 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      * @return an Optional containing the field if found
      */
     @SuppressWarnings("unchecked")
-    default <R> Optional<IReflectField<R>> getFieldWithName(String name) {
+    default <R> Optional<IReflectField<R>> findFieldWithName(String name) {
         return this.getFieldsByFilter(field -> field.getName().equals(name)).stream().findFirst()
                 .map(iReflectField -> (IReflectField<R>) iReflectField);
+    }
+
+    /**
+     * Finds a field by its name.
+     *
+     * @param <R>  the expected field type
+     * @param name name of the field to find
+     * @return the field
+     * @throws java.util.NoSuchElementException if field is not found
+     */
+    @SuppressWarnings("unchecked")
+    default <R> IReflectField<R> getFieldWithName(String name) {
+        return (IReflectField<R>) this.findFieldWithName(name).orElseThrow();
     }
 
     /**
@@ -195,8 +208,19 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      * @param name the method name
      * @return an Optional containing the method if found
      */
-    default Optional<IReflectMethod<?>> getMethodWithNameAndParameters(String name) {
+    default Optional<IReflectMethod<?>> findMethodWithNameAndParameters(String name) {
         return this.getMethodsWithParameters(new Parameter[0]).stream().filter(method -> method.getName().equals(name)).findFirst();
+    }
+
+    /**
+     * Finds a method by name with no parameters.
+     *
+     * @param name the method name
+     * @return the method
+     * @throws java.util.NoSuchElementException if method is not found
+     */
+    default IReflectMethod<?> getMethodWithNameAndParameters(String name) {
+        return this.findMethodWithNameAndParameters(name).orElseThrow();
     }
 
     /**
@@ -206,8 +230,20 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      * @param params the parameter classes
      * @return an Optional containing the method if found
      */
-    default Optional<IReflectMethod<?>> getMethodWithNameAndParameters(String name, Class<?>... params) {
+    default Optional<IReflectMethod<?>> findMethodWithNameAndParameters(String name, Class<?>... params) {
         return this.getMethodsWithParameters(params).stream().filter(method -> method.getName().equals(name)).findFirst();
+    }
+
+    /**
+     * Finds a method by name and parameter types.
+     *
+     * @param name   the method name
+     * @param params the parameter classes
+     * @return the method
+     * @throws java.util.NoSuchElementException if method is not found
+     */
+    default IReflectMethod<?> getMethodWithNameAndParameters(String name, Class<?>... params) {
+        return this.findMethodWithNameAndParameters(name, params).orElseThrow();
     }
 
     /**
@@ -217,8 +253,20 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      * @param params the {@link IReflectClass} parameter types
      * @return an Optional containing the method if found
      */
-    default Optional<IReflectMethod<?>> getMethodWithNameAndParameters(String name, IReflectClass<?>... params) {
-        return this.getMethodWithNameAndParameters(name, Arrays.stream(params).map(IReflectClass::getType).toArray(Class[]::new));
+    default Optional<IReflectMethod<?>> findMethodWithNameAndParameters(String name, IReflectClass<?>... params) {
+        return this.findMethodWithNameAndParameters(name, Arrays.stream(params).map(IReflectClass::getType).toArray(Class[]::new));
+    }
+
+    /**
+     * Finds a method by name and reflective parameter types.
+     *
+     * @param name   the method name
+     * @param params the {@link IReflectClass} parameter types
+     * @return the method
+     * @throws java.util.NoSuchElementException if method is not found
+     */
+    default IReflectMethod<?> getMethodWithNameAndParameters(String name, IReflectClass<?>... params) {
+        return this.findMethodWithNameAndParameters(name, params).orElseThrow();
     }
 
     /**
@@ -228,8 +276,20 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      * @param paramNames the parameter names
      * @return an Optional containing the method if found
      */
-    default Optional<IReflectMethod<?>> getMethodWithNameAndParameters(String name, String... paramNames) {
+    default Optional<IReflectMethod<?>> findMethodWithNameAndParameters(String name, String... paramNames) {
         return this.getMethodsWithParameters(paramNames).stream().filter(method -> method.getName().equals(name)).findFirst();
+    }
+
+    /**
+     * Finds a method by name and parameter names.
+     *
+     * @param name       the method name
+     * @param paramNames the parameter names
+     * @return the method
+     * @throws java.util.NoSuchElementException if method is not found
+     */
+    default IReflectMethod<?> getMethodWithNameAndParameters(String name, String... paramNames) {
+        return this.findMethodWithNameAndParameters(name, paramNames).orElseThrow();
     }
 
     /**
@@ -265,11 +325,22 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      * @param params - constructor parameters
      * @return an optional of {@link IReflectConstructor}
      */
-    default Optional<IReflectConstructor<T>> getConstructorWithParameters(Class<?>... params) {
+    default Optional<IReflectConstructor<T>> findConstructorWithParameters(Class<?>... params) {
         return this.getConstructorsByFilter(constructor ->
                 Arrays.equals(constructor.getParameters().stream()
                         .map(ReflectParameter::getType)
                         .toArray(Class[]::new), params)).stream().findFirst();
+    }
+
+    /**
+     * Finds a constructor by parameter types.
+     *
+     * @param params constructor parameters
+     * @return the constructor
+     * @throws java.util.NoSuchElementException if constructor is not found
+     */
+    default IReflectConstructor<T> getConstructorWithParameters(Class<?>... params) {
+        return this.findConstructorWithParameters(params).orElseThrow();
     }
 
     /**
@@ -278,8 +349,19 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      * @param params - constructor parameters
      * @return an optional of {@link IReflectConstructor}
      */
-    default Optional<IReflectConstructor<T>> getConstructorWithParameters(Parameter... params) {
-        return this.getConstructorWithParameters(Arrays.stream(params).map(Parameter::getType).toArray(Class[]::new));
+    default Optional<IReflectConstructor<T>> findConstructorWithParameters(Parameter... params) {
+        return this.findConstructorWithParameters(Arrays.stream(params).map(Parameter::getType).toArray(Class[]::new));
+    }
+
+    /**
+     * Finds a constructor by raw parameters.
+     *
+     * @param params constructor parameters
+     * @return the constructor
+     * @throws java.util.NoSuchElementException if constructor is not found
+     */
+    default IReflectConstructor<T> getConstructorWithParameters(Parameter... params) {
+        return this.findConstructorWithParameters(params).orElseThrow();
     }
 
     /**
@@ -288,8 +370,19 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      * @param params - constructor parameters
      * @return an optional of {@link IReflectConstructor}
      */
-    default Optional<IReflectConstructor<T>> getConstructorWithParameters(IReflectClass<?>... params) {
-        return this.getConstructorWithParameters(Arrays.stream(params).map(IReflectClass::getType).toArray(Class[]::new));
+    default Optional<IReflectConstructor<T>> findConstructorWithParameters(IReflectClass<?>... params) {
+        return this.findConstructorWithParameters(Arrays.stream(params).map(IReflectClass::getType).toArray(Class[]::new));
+    }
+
+    /**
+     * Finds a constructor by reflective parameter types.
+     *
+     * @param params constructor parameters
+     * @return the constructor
+     * @throws java.util.NoSuchElementException if constructor is not found
+     */
+    default IReflectConstructor<T> getConstructorWithParameters(IReflectClass<?>... params) {
+        return this.findConstructorWithParameters(params).orElseThrow();
     }
 
     /**
@@ -298,7 +391,7 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
      * @param paramNames - constructor parameters name
      * @return an optional of {@link IReflectConstructor}
      */
-    default Optional<IReflectConstructor<T>> getConstructorWithParameters(String... paramNames) {
+    default Optional<IReflectConstructor<T>> findConstructorWithParameters(String... paramNames) {
         return this.getConstructorsByFilter(constructor ->
                 Arrays.equals(constructor.getParameters().stream()
                         .map(ReflectParameter::getName)
@@ -306,13 +399,34 @@ public interface IReflectClass<T> extends ModifierHolder, AnnotationHolder, Valu
     }
 
     /**
+     * Finds a constructor by parameter names.
+     *
+     * @param paramNames constructor parameter names
+     * @return the constructor
+     * @throws java.util.NoSuchElementException if constructor is not found
+     */
+    default IReflectConstructor<T> getConstructorWithParameters(String... paramNames) {
+        return this.findConstructorWithParameters(paramNames).orElseThrow();
+    }
+
+    /**
      * Retrieves the default (no-arg) constructor if present.
      *
      * @return an Optional containing the default constructor
      */
-    default Optional<IReflectConstructor<T>> getDefaultConstructor() {
+    default Optional<IReflectConstructor<T>> findDefaultConstructor() {
         return getConstructorsByFilter(c -> c.getParameters().isEmpty())
                 .stream().findFirst();
+    }
+
+    /**
+     * Retrieves the default (no-arg) constructor.
+     *
+     * @return the default constructor
+     * @throws java.util.NoSuchElementException if default constructor is not found
+     */
+    default IReflectConstructor<T> getDefaultConstructor() {
+        return this.findDefaultConstructor().orElseThrow();
     }
 
     /**
